@@ -1,0 +1,5 @@
+Drawback of the websit of Gada Eastern Zone Economic Authority
+: Mobile Responsiveness
+: Repetition
+: NavBar , Header and Main
+: Additional CSS styling(Dark Mode , Cards , Hovers)

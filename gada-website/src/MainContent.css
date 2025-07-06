@@ -1,0 +1,381 @@
+/* Slideshow Styles */
+body {
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  background-color: var(--background-color);
+}
+.slideshow-container {
+  position: relative;
+  left: 0;
+  width: 100%;
+  height: 100vh; /* Full viewport height */
+  overflow: hidden;
+  background-color: #000;
+}
+
+.slides-wrapper {
+  display: flex;
+  height: 100%;
+  transition: transform 1.5s ease-in-out; /* Slow and smooth transition */
+}
+
+.slide {
+  min-width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  backface-visibility: hidden; /* Helps with rendering performance */
+}
+
+.slide-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* Refined overlay for better clarity */
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%);
+}
+
+.slide-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 2rem;
+  animation: fadeIn 2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.slide-title {
+  font-size: 3rem;
+  font-weight: 700;
+  margin: 0 0 1.5rem 0;
+  text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+}
+
+.slide-button {
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  padding: 0.8rem 2rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.slide-button:hover {
+  background-color: #c00; /* This should be a darker shade of accent */
+  transform: scale(1.05);
+}
+
+.slide-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  font-size: 2rem;
+  padding: 1rem;
+  cursor: pointer;
+  z-index: 3;
+  transition: background-color 0.3s ease;
+}
+
+.slide-arrow:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.left-arrow {
+  left: 2rem;
+}
+
+.right-arrow {
+  right: 2rem;
+}
+
+.dots-container {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.8rem;
+  z-index: 3;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.dot.active {
+  background-color: white;
+}
+
+/* Main Content Styles */
+.main-content {
+  display: flex;
+  flex-direction: row; /* Side by side layout */
+  margin: 20px;
+  gap: 20px; /* Space between slideshow and message section */
+  width: calc(100% - 40px);
+  position: relative; 
+  z-index: 1; 
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+  border-radius: 15px;
+  overflow: hidden; /* Ensures shadow respects the border radius */
+}
+
+.slideshow-container {
+  width: 66.66%;
+  height: auto; 
+  border-radius: 10px ;/* Or set a specific height */
+}
+
+.slideshow-container::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 0, 0, 0.1), transparent 40%);
+  transform: rotate(0deg);
+  transition: transform 0.8s ease-in-out;
+  z-index: 0;
+  opacity: 0;
+}
+
+.slideshow-container:hover::before {
+  transform: rotate(360deg);
+  opacity: 1;
+}
+
+.message-container {
+  width: 33.33%;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  color: white;
+  border-radius: 15px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.message-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('./Slide-Show/gada-slide-photo7.png');
+  background-size: cover;
+  background-position: center;
+  filter: blur(4px);
+  transform: scale(1.1); /* Prevents blurry edges from showing */
+  z-index: -1;
+}
+
+.message-container::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 0, 0, 0.1), transparent 40%);
+  transform: rotate(0deg);
+  transition: transform 0.8s ease-in-out;
+  z-index: 0;
+  opacity: 0;
+}
+
+.message-container:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+}
+
+.message-container:hover::before {
+  transform: rotate(360deg);
+  opacity: 1;
+}
+
+.message-main-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.message-slider {
+  position: relative;
+  z-index: 1;
+}
+
+.message-card {
+  text-align: center;
+}
+
+.message-text {
+  font-style: italic;
+  margin-bottom: 20px;
+}
+
+.message-owner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.owner-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  margin-right: 15px;
+}
+
+.owner-details {
+  text-align: left;
+}
+
+.owner-name {
+  font-weight: bold;
+}
+
+.owner-title {
+  font-size: 0.9rem;
+  color: #ddd; /* Lighter color for dark background */
+}
+
+.message-slider-nav {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.message-slider-nav button {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  padding: 0 10px;
+  color: white;
+}
+
+/* Responsive Design */
+@media (min-width: 769px) {
+  .menu-container {
+    display: flex !important; /* Ensure it is visible on desktop */
+  }
+}
+
+
+@media (max-width: 768px) {
+  .title-container {
+    display: none; /* Hide titles on small screens to save space */
+  }
+
+  .menu-container {
+    position: fixed; /* Changed to fixed for full-height sidebar */
+    top: 0;
+    right: 0;
+    width: 280px; /* Width of the sidebar */
+    height: 100vh; /* Full height */
+    background-color: rgba(0, 0, 0, 0.9); /* Faded black for sidebar */
+    flex-direction: column;
+    padding: 4rem 2rem;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.2);
+    transform: translateX(100%); /* Hide off-screen to the right */
+    transition: transform 0.3s ease-in-out;
+    display: flex; /* Keep as flex to apply children styling */
+    align-items: flex-start; /* Align items to the left */
+    gap: 2rem;
+  }
+
+  .menu-container.active {
+    transform: translateX(0); /* Slide in from the right */
+  }
+
+  .nav-links {
+    flex-direction: column;
+    align-items: flex-start; /* Align links to the left */
+    gap: 1.5rem;
+    width: 100%; /* Ensure links take full width of sidebar */
+  }
+
+  .search-wrapper {
+    margin-top: 2rem;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .hamburger {
+    display: block;
+  }
+
+  .slide-title {
+    font-size: 2rem;
+  }
+
+  .slide-button {
+    padding: 0.6rem 1.5rem;
+    font-size: 1rem;
+  }
+
+  .slide-arrow {
+    font-size: 1.5rem;
+    padding: 0.8rem;
+  }
+
+  .left-arrow {
+    left: 1rem;
+  }
+
+  .right-arrow {
+    right: 1rem;
+  }
+
+  .main-content {
+    margin: 10px;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+
+  }
+
+  .slideshow-container {
+    width: 100%; 
+    height: 50vh;  }
+
+  .message-container {
+    width: 100%; 
+    padding: 10px;
+    margin-top: 20px; 
+    box-shadow: inherit;
+
+  }
+}
+

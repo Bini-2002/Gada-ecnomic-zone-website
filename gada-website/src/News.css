@@ -1,0 +1,159 @@
+body {
+    font-family: 'Roboto', sans-serif; /* Using Roboto for consistency */
+    margin: 0;
+}
+
+.news-container {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    padding: 50px 20px;
+    flex-wrap: wrap;
+    background-color: var(--background-color);
+}
+
+.news-card {
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: var(--box-shadow);
+    width: 350px;
+    background-color: var(--card-bg);
+    color: var(--card-text-color);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.news-card * {
+    color: var(--card-text-color);
+}
+
+.news-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.5); /* This could be a variable too */
+}
+
+.news-header {
+    display: flex;
+    border-bottom: 1px solid var(--border-color);
+    align-items: stretch; /* Stretch items to fill the height */
+}
+
+.news-date {
+    flex: 0 0 90px; /* Give date a fixed width */
+    padding: 15px;
+    background-color: var(--card-bg);
+    text-align: center;
+    color: var(--text-color);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-right: none; /* Remove the old border */
+}
+
+.news-date-icon {
+    color: var(--accent-color);
+    margin-bottom: 5px; /* Add some space between icon and day */
+}
+
+.news-day {
+    font-size: 2.5rem; /* Large day */
+    font-weight: 700;
+    color: var(--card-text-color);
+    line-height: 1;
+}
+
+.news-month {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-secondary-color);
+    text-transform: uppercase;
+    margin-top: 5px;
+}
+
+.news-year {
+    font-size: 0.8rem;
+    color: var(--text-secondary-color);
+    margin-top: 3px;
+}
+
+.news-separator {
+    width: 4px;
+    background-color: var(--accent-color);
+    border-radius: 2px;
+    margin: auto 0; /* Center vertically */
+    height: 80%;
+}
+
+.news-image-container {
+    flex: 1; /* Let image container take remaining space */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    height: 180px;
+}
+
+.news-image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.news-card:hover .news-image-container img {
+    transform: scale(1.05);
+}
+
+.news-title {
+    padding: 15px 20px;
+}
+
+.news-title h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--card-text-color);
+    line-height: 1.4;
+}
+
+.news-detail {
+    padding: 0 20px 15px 20px;
+    font-size: 1em;
+    line-height: 1.6;
+    color: var(--text-secondary-color);
+    flex-grow: 1;
+}
+
+.news-continue-reading {
+    padding: 15px 20px;
+    text-align: right;
+    border-top: 1px solid #444; /* Darker border */
+    background-color: #444; /* Match date background */
+}
+
+.news-continue-reading a {
+    text-decoration: none;
+    color: red;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    transition: color 0.3s ease;
+}
+
+.news-continue-reading a:hover {
+    color: #c00;
+    text-decoration: none;
+}
+
+.news-continue-reading a::after {
+    content: "→";
+    margin-left: 8px;
+    transition: transform 0.3s ease;
+}
+
+.news-continue-reading a:hover::after {
+    transform: translateX(5px);
+}

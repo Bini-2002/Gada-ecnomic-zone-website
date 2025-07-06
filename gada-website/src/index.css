@@ -1,0 +1,66 @@
+/* CSS Variables */
+:root {
+  /* General */
+  --text-color: #333;
+  --text-secondary-color: #555;
+  --background-color: #d2d4bf;
+  --white-color:#d2d4bf; /* Softer white for backgrounds */
+  --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  --border-radius: 10px;
+  --border-color: #e0e0e0;
+
+  /* Theme-specific */
+  --primary-color: #27786f;
+  --secondary-color: #be7f18;
+  --accent-color: #9c1f11;
+
+  /* Component-specific */
+  --navbar-bg: #f8f9fa; /* Softer white */
+  --logo-title-bg: #f3f6fa;
+  --logo-title-bg-hover: #e9ecef;
+  --nav-link-color: #e9e2e2;
+  --nav-link-bg: var(--accent-color);
+  --search-bg: #f3f6fa;
+  --search-bg-active: #e9ecef;
+  --card-bg: #f7f8fa; /* Softer card background */
+  --card-text-color: #222;
+  --button-bg: var(--accent-color);
+  --button-text-color: #ffffff;
+}
+
+[data-theme='dark'] {
+  /* General */
+  --text-color: #f0f0f0;
+  --text-secondary-color: #ccc;
+  --background-color: #121212;
+  --white-color: #1e1e1e;
+  --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  --border-color: #333;
+
+  /* Theme-specific */
+  --primary-color: #e74c3c; /* Red */
+  --secondary-color: #f39c12; /* Orange */
+  --accent-color: #e74c3c; /* Red */
+
+  /* Component-specific */
+  --navbar-bg: #1e1e1e;
+  --logo-title-bg: #2c2c2c;
+  --logo-title-bg-hover: #383838;
+  --nav-link-color: #f0f0f0;
+  --nav-link-bg: var(--accent-color);
+  --search-bg: #2c2c2c;
+  --search-bg-active: #383838;
+  --card-bg: #1e1e1e;
+  --card-text-color: #f0f0f0;
+  --button-bg: var(--accent-color);
+  --button-text-color: #ffffff;
+}
+
+/* General Styles */
+body {
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
