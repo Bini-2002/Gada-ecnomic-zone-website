@@ -3,8 +3,8 @@
   /* General */
   --text-color: #333;
   --text-secondary-color: #555;
-  --background-color: #d2d4bf;
-  --white-color:#d2d4bf; /* Softer white for backgrounds */
+  --background-color: #f0f2f5; /* A fair, light gray background */
+  --white-color: #ffffff; /* Pure white for cards and other elements */
   --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   --border-radius: 10px;
   --border-color: #e0e0e0;
@@ -15,14 +15,14 @@
   --accent-color: #9c1f11;
 
   /* Component-specific */
-  --navbar-bg: #f8f9fa; /* Softer white */
-  --logo-title-bg: #f3f6fa;
-  --logo-title-bg-hover: #e9ecef;
+  --navbar-bg: #ffffff; /* White navbar to stand out */
+  --logo-title-bg: #e9ecef;
+  --logo-title-bg-hover: #dfe3e7;
   --nav-link-color: #e9e2e2;
   --nav-link-bg: var(--accent-color);
-  --search-bg: #f3f6fa;
-  --search-bg-active: #e9ecef;
-  --card-bg: #f7f8fa; /* Softer card background */
+  --search-bg: #e9ecef;
+  --search-bg-active: #dfe3e7;
+  --card-bg: #ffffff; /* White cards to stand out */
   --card-text-color: #222;
   --button-bg: var(--accent-color);
   --button-text-color: #ffffff;
@@ -32,15 +32,15 @@
   /* General */
   --text-color: #f0f0f0;
   --text-secondary-color: #ccc;
-  --background-color: #121212;
+  --background-color:hsl(220, 30%, 7%);
   --white-color: #1e1e1e;
   --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
   --border-color: #333;
 
   /* Theme-specific */
-  --primary-color: #e74c3c; /* Red */
+  --primary-color: #bc4437; /* Red */
   --secondary-color: #f39c12; /* Orange */
-  --accent-color: #e74c3c; /* Red */
+  --accent-color: #bc4437; /* Red */
 
   /* Component-specific */
   --navbar-bg: #1e1e1e;

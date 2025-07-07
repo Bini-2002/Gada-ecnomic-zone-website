@@ -7,47 +7,70 @@ import { ThemeContext } from './ThemeContext';
 export default function NavBar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { isDarkMode, toggleTheme } = useContext(ThemeContext);
 
   return (
     <nav className="navbar">
-      <div className='logo-title-container'>
+      <div className="navbar-grid-left">
+        <div className="nav-dropdown-menu-bar">
+          <button className="nav-dropdown-btn" onClick={() => setIsDropdownOpen(!isDropdownOpen)} aria-label="Open more menu">
+            <i className="fi fi-rr-list"></i>
+          </button>
+          {isDropdownOpen && (
+            <div className="nav-dropdown-list">
+              <a href="#one-stop" className="nav-link-item">One Stop Services <i class="fi fi-rr-angle-small-down"></i></a>
+              <a href="#resource" className="nav-link-item">Resource Center <i class="fi fi-rr-angle-small-down"></i></a>
+              <a href="#opportunity" className="nav-link-item">Opportunity & Incentive <i class="fi fi-rr-angle-small-down"></i></a>
+              <a href="#news" className="nav-link-item">News & Events <i class="fi fi-rr-angle-small-down"></i></a>
+              <a href="#services" className="nav-link-item">Services <i class="fi fi-rr-angle-small-down"></i></a>
+              <a href="#value" className="nav-link-item">Value Proposition <i class="fi fi-rr-angle-small-down"></i></a>
+              <a href="#involved" className="nav-link-item">Get Involved <i class="fi fi-rr-angle-small-down"></i></a>
+              <a href="#log-in" className="nav-link-item">Log in </a>
+            </div>
+          )}
+        </div>
         <div className="logo">
           <img src={logoImage} alt="Gada Economic Zone Logo" />
         </div>
-        <div className="title-container" >
-          <span className='title-oro'>Zoonii Diinagde Addaa Gadaa</span>
-          <span className='title-amh'>ገዳ ልዩ የኢኮኖሚ ዞን</span>
-          <span className='title-eng'>Gada Special Economic Zone</span>
+      </div>
+
+      <div className="navbar-grid-middle">
+        <div className='logo-title-container'>
+          <div className="title-container" >
+            <span className='title-oro'>Zoonii Diinagde Addaa Gadaa</span>
+            <span className='title-amh'>ገዳ ልዩ የኢኮኖሚ ዞን</span>
+            <span className='title-eng'>Gada Special Economic Zone</span>
+          </div>
         </div>
       </div>
-      
 
-      <div className={`menu-container ${isMenuOpen ? 'active' : ''}`}>
-        <div className="nav-links-container">
-          <div className="nav-links">
-            <a href="#home" className="nav-link-item">Home</a>
-            <a href="#about" className="nav-link-item">About Us</a>
-            <a href="#services" className="nav-link-item">Resource Center</a>
-            <a href="#opportunity" className="nav-link-item">Opportunity & Incentive</a>
-            <a href="#news" className="nav-link-item">News & Events</a>
-            <a href="#contact" className="nav-link-item">Get Involved</a>
+      <div className="navbar-grid-right">
+        <div className={`menu-container ${isMenuOpen ? 'active' : ''}`}> 
+          <div className="nav-links-container">
+            <div className="nav-links">
+              <div className="nav-links-pad">
+                <a href="#home" className="nav-link-item">Home</a>
+              </div>
+              <div className="nav-links-pad">
+                <a href="#about" className="nav-link-item">About Us</a>
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div className={`search-wrapper ${isSearchOpen ? 'active' : ''}`}>
-          <button className="search-icon-btn" onClick={() => setIsSearchOpen(!isSearchOpen)} aria-label="Toggle Search">
-            <i className="fi fi-rr-search"></i>
+          <div className={`search-wrapper ${isSearchOpen ? 'active' : ''}`}>
+            <button className="search-icon-btn" onClick={() => setIsSearchOpen(!isSearchOpen)} aria-label="Toggle Search">
+              <i className="fi fi-rr-search"></i>
+            </button>
+            <div className="search-container">
+              <input type="text" placeholder="Search..." />
+            </div>
+          </div>
+
+          <button onClick={toggleTheme} className="theme-switcher" aria-label="Toggle theme">
+            <i className={isDarkMode ? 'fi fi-rr-sun' : 'fi fi-rr-moon'}></i>
           </button>
-          <div className="search-container">
-            <input type="text" placeholder="Search..." />
-          </div>
         </div>
-
-        <button onClick={toggleTheme} className="theme-switcher" aria-label="Toggle theme">
-          <i className={isDarkMode ? 'fi fi-rr-sun' : 'fi fi-rr-moon'}></i>
-        </button>
-
       </div>
 
       <button className="hamburger" onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Toggle menu">

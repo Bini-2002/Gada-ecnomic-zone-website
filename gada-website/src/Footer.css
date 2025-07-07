@@ -66,3 +66,129 @@
   transform: scale(1.1);
   border-color: var(--accent-color);
 }
+
+/* Footer Bottom Content Styles */
+.footer-bottom-content {
+  display: flex;
+  justify-content: space-between; /* Distribute items evenly */
+  align-items: flex-start; /* Align items to the top */
+  padding: 2rem;
+  margin-top: 2rem;
+  border-top: 1px solid var(--border-color);
+  gap: 2rem; /* Add space between the columns */
+}
+
+.address,
+.footer-form,
+.visitor-stats {
+  flex: 1; /* Each column takes up equal space */
+  padding: 0 1rem; /* Add some padding inside each column */
+}
+
+/* Address Styles */
+.address p {
+  margin: 0.5rem 0;
+  line-height: 1.6;
+}
+
+.address i {
+  margin-right: 0.5rem;
+  color: var(--accent-color);
+}
+
+/* Form Styles */
+.footer-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.footer-form label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.footer-form input {
+  padding: 0.8rem;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  background-color: var(--background-color);
+  color: var(--text-color);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.footer-form button {
+  padding: 0.8rem;
+  border: none;
+  border-radius: 4px;
+  background-color: var(--accent-color);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.footer-form button:hover {
+  background-color: #c0392b; /* Darker accent color */
+}
+
+/* Visitor Stats Styles */
+.visitor-stats h4 {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  color: var(--accent-color);
+}
+
+.visitor-stats p {
+  margin: 0.5rem 0;
+}
+
+.visitor-stats strong {
+  font-weight: 700;
+}
+
+/* Footer End Section */
+.footer-end {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  margin-top: 2rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.footer-logo img {
+  height: 40px; /* Smaller logo */
+  width: auto;
+}
+
+.social-media-icons {
+  display: flex;
+  gap: 1.5rem; /* Space between icons */
+}
+
+.social-media-icons a {
+  color: var(--text-secondary-color);
+  font-size: 1.4rem; /* Icon size */
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.social-media-icons a:hover {
+  color: var(--accent-color);
+  transform: scale(1.2);
+}
+
+.copyright-text {
+  font-size: 0.9rem;
+  color: var(--text-secondary-color);
+}
+
+/* Responsive adjustments for the footer end */
+@media (max-width: 768px) {
+  .footer-end {
+    flex-direction: column; /* Stack items on smaller screens */
+    gap: 1rem;
+    text-align: center;
+  }
+}
