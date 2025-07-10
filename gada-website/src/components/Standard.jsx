@@ -1,21 +1,17 @@
-import { standard1 } from '../images/standard-1.jpg';
-import { standard2 } from '../images/standard-2.jpg';
+import standard1Img from '../images/standard-1.jpg';
+import standard2Img from '../images/standard-2.jpg';
 import '../Standard.css'
-
-const standard1 = { src: { standard1 }, alt: 'Standard Plan Image 1' };
-const standard2 = { src: { standard2 }, alt: 'Standard Plan Image 1' };
-
 
 export default function Standard() {
   return (
-    <div className="standard">
+    <div className="standard" id="standard">
       <div className='oss-title'>
-        <h1>Standard Operation procedure</h1>
+        <h1>STANDARD OPERATIONAL PROCEDURE</h1>
       </div>
       
       <div className="standard-images">
-        <img src={standard1} alt="Standard Plan Image 1" />
-        <img src={standard2} alt="Standard Plan Image 2" />
+        <img src={standard1Img} alt="Standard Plan Image 1" />
+        <img src={standard2Img} alt="Standard Plan Image 2" />
       </div>
       <div className='oss-descriptions'>
         <h2>WHAT IS OSS?</h2>

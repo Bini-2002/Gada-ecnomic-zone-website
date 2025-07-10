@@ -19,7 +19,17 @@ export default function NavBar() {
           </button>
           {isDropdownOpen && (
             <div className="nav-dropdown-list">
-              <a href="#one-stop" className="nav-link-item">One Stop Services <i class="fi fi-rr-angle-small-down"></i></a>
+              <div className="nav-link-item nav-has-dropdown">
+                One Stop Services <i className="fi fi-rr-angle-small-down"></i>
+                <div className="nav-submenu">
+                  <a href="#standard" className="nav-submenu-item" onClick={(e) => {e.preventDefault(); window.location.hash = '#standard';}}>
+                    Standard Operation Procedure
+                  </a>
+                  <a href="#investor" className="nav-submenu-item" onClick={(e) => {e.preventDefault(); window.location.hash = '#investor';}}>
+                    Investor Roadmap
+                  </a>
+                </div>
+              </div>
               <a href="#resource" className="nav-link-item">Resource Center <i class="fi fi-rr-angle-small-down"></i></a>
               <a href="#opportunity" className="nav-link-item">Opportunity & Incentive <i class="fi fi-rr-angle-small-down"></i></a>
               <a href="#news" className="nav-link-item">News & Events <i class="fi fi-rr-angle-small-down"></i></a>

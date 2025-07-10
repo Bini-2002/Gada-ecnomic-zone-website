@@ -1,0 +1,101 @@
+/* Standard Section Styles */
+.standard {
+  background: var(--card-bg);
+  color: var(--card-text-color);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  padding: 2.5rem 2rem;
+  margin: 2rem auto;
+  max-width: 1100px;
+}
+
+.oss-title h1 {
+  text-align: center;
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: var(--primary-color);
+  letter-spacing: 1px;
+}
+
+.standard-images {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.standard-images img {
+  width: 320px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  background: var(--white-color);
+}
+
+.oss-descriptions, .oss-services, .oss-application, .oss-others {
+  margin-bottom: 2rem;
+}
+
+.oss-descriptions h2,
+.oss-services h2,
+.oss-application h2,
+.oss-others h2 {
+  color: var(--secondary-color);
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.oss-descriptions p {
+  font-size: 1.08rem;
+  line-height: 1.7;
+  color: var(--text-secondary-color);
+}
+
+.oss-services-list,
+.oss-others ul,
+.oss-application ol {
+  margin-left: 1.5rem;
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+.oss-services-list li,
+.oss-others li,
+.oss-application li {
+  margin-bottom: 0.5rem;
+  padding-left: 0.5rem;
+  position: relative;
+}
+
+.oss-services-list li::before,
+.oss-others li::before {
+  content: '\2022';
+  color: var(--accent-color);
+  font-weight: bold;
+  display: inline-block;
+  width: 1em;
+  margin-left: -1em;
+}
+
+.oss-application ol {
+  list-style: decimal inside;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .standard-images {
+    flex-direction: column;
+    align-items: center;
+  }
+  .standard-images img {
+    width: 90vw;
+    max-width: 400px;
+    height: 180px;
+  }
+  .standard {
+    padding: 1.2rem 0.5rem;
+  }
+}
