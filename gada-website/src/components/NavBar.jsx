@@ -1,7 +1,7 @@
 import { useState, useContext } from 'react';
 import logoImage from '../images/GSEZ-Horizontal-logo.png';
-import '../index.css'; // Ensure you have the correct path to your CSS file
-import '../NavBar.css'; // Ensure you have the correct path to your CSS file
+import '../index.css'; 
+import '../NavBar.css'; 
 import { ThemeContext } from './ThemeContext';
 
 export default function NavBar() {
@@ -30,7 +30,17 @@ export default function NavBar() {
                   </a>
                 </div>
               </div>
-              <a href="#resource" className="nav-link-item">Resource Center <i class="fi fi-rr-angle-small-down"></i></a>
+              <div className="nav-link-item nav-has-dropdown">
+                Resource Center <i className="fi fi-rr-angle-small-down"></i>
+                <div className="nav-submenu">
+                  <a href="#value-proposition" className="nav-submenu-item">Value Proposition</a>
+                  <a href="#proclamations" className="nav-submenu-item">Proclamations</a>
+                  <a href="#regulations" className="nav-submenu-item">Regulations</a>
+                  <a href="#directives" className="nav-submenu-item">Directives</a>
+                  <a href="#annual-executive" className="nav-submenu-item">Annual Executive</a>
+                  <a href="#media-gallery" className="nav-submenu-item">Media Gallery</a>
+                </div>
+              </div>
               <a href="#opportunity" className="nav-link-item">Opportunity & Incentive <i class="fi fi-rr-angle-small-down"></i></a>
               <a href="#news" className="nav-link-item">News & Events <i class="fi fi-rr-angle-small-down"></i></a>
               <a href="#services" className="nav-link-item">Services <i class="fi fi-rr-angle-small-down"></i></a>
