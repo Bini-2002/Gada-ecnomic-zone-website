@@ -316,6 +316,7 @@ body {
 .nav-has-dropdown {
   position: relative;
   cursor: pointer;
+  padding: 10px 10px; /* Add padding for better click area */
 }
 
 .nav-submenu {
