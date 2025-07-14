@@ -1,13 +1,14 @@
-import Regulations from '../images/proclamation.png';
+import RegulationsImg from '../images/proclamation.png';
 import RegulationFile2 from '../Files/regulation_517_2022.pdf';
 import RegulationFile1 from '../Files/Regulation-no.228-2022.pdf';
+import '../Regulations.css';
 
-export default function Regulations() {
+function RegulationsPage() {
   return (
     <div className="regulations">
       <h1>REGULATIONS</h1>
       <div className="regulations-image">
-        <img src={Regulations} alt="Regulations" />
+        <img src={RegulationsImg} alt="Regulations" />
       </div>
       <h2>Key Points: Regulation to Establish the Gada Special Economic Zone Development Corporation, No. 228/2022</h2>
       <p>(From Regulation-no.228-2022.pdf)</p>
@@ -98,3 +99,5 @@ export default function Regulations() {
     </div>
   );
 }
+
+export default RegulationsPage;

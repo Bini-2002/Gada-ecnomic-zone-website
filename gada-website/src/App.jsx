@@ -9,6 +9,7 @@ import Standard from './components/Standard.jsx';
 import Inverstor from './components/Inverstor.jsx';
 import ValueProposition from './components/ValueProposition.jsx';
 import Proclamations from './components/Proclamations.jsx';
+import RegulationsPage from './components/Regulations.jsx';
 import { ThemeContext } from './components/ThemeContext';
 
 
@@ -41,6 +42,8 @@ export default function App() {
         return <ValueProposition />;
       case '#proclamations':
         return <Proclamations />;
+      case '#regulations':
+        return <RegulationsPage />;
       default:
         return (
           <>

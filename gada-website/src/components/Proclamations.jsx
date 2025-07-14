@@ -2,6 +2,7 @@ import ProclamationsImg from '../images/proclamation.png';
 import Proclamations1 from '../images/proclamation-1.jpg';
 import Proclamations2 from '../images/proclamation-2.jpg';
 import '../Proclamations.css';
+import '../index.css';
 import proclamationFile1322 from '../Files/Special-Economic-Zone-Proclamation-No.-1322_2024-3.pdf';
 import proclamationFile226 from '../Files/Proclamation-226-2020.pdf';
 

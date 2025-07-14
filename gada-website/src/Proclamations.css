@@ -170,7 +170,7 @@
   color: #111;
 }
 
-/* Dark mode support */
+/* Dark mode support - all text white except red headings */
 [data-theme="dark"] .proclamations {
   background: #111;
   color: #fff;
@@ -193,7 +193,11 @@
 [data-theme="dark"] .proclamations h4 {
   color: #b71c1c;
 }
-[data-theme="dark"] .proclamations h3 {
+[data-theme="dark"] .proclamations h3,
+[data-theme="dark"] .proclamations ul,
+[data-theme="dark"] .proclamations li,
+[data-theme="dark"] .proclamation-card,
+[data-theme="dark"] .proclamation-point {
   color: #fff;
 }
 [data-theme="dark"] .proclamation-source {

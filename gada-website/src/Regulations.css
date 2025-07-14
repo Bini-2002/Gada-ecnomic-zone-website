@@ -1,0 +1,192 @@
+/* Modern, visually appealing styles for Regulations page with impressive listing and download button styling */
+.regulations {
+  max-width: 1000px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 6px 32px rgba(0,0,0,0.08);
+  font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+  color: #111;
+}
+
+.regulations h1 {
+  text-align: center;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  letter-spacing: 2px;
+  color: #b71c1c;
+}
+
+.regulations-image {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+.regulations-image img {
+  max-width: 340px;
+  height: auto;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(183,28,28,0.15), 0 1.5px 8px rgba(0,0,0,0.10);
+  border: 3px solid #b71c1c;
+  background: linear-gradient(135deg, #fff 60%, #fbe9e7 100%);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.regulations-image img:hover {
+  transform: scale(1.05) rotate(-2deg);
+  box-shadow: 0 8px 32px rgba(183,28,28,0.22), 0 2px 12px rgba(0,0,0,0.12);
+}
+
+.regulations h2 {
+  font-size: 1.4rem;
+  margin-top: 2rem;
+  color: #b71c1c;
+  font-weight: 600;
+}
+
+.regulations h3 {
+  font-size: 1.15rem;
+  margin-top: 1.2rem;
+  color: #111;
+  font-weight: 500;
+}
+
+/* Impressive listing styles */
+.regulations ul {
+  margin: 1.2rem 0 2rem 0;
+  padding: 0;
+  list-style: none;
+  font-size: 1.08rem;
+  color: #111;
+}
+.regulations ul > li {
+  position: relative;
+  background: #fbe9e7;
+  border-left: 5px solid #b71c1c;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  padding: 1rem 1.2rem 1rem 2.2rem;
+  box-shadow: 0 2px 8px rgba(183,28,28,0.07);
+  transition: background 0.2s;
+}
+.regulations ul > li:hover {
+  background: #fff3e0;
+}
+.regulations ul > li:before {
+  content: '\2022';
+  position: absolute;
+  left: 1rem;
+  top: 1.1rem;
+  font-size: 1.5rem;
+  color: #b71c1c;
+  font-weight: bold;
+}
+
+.regulations ul li strong {
+  color: #b71c1c;
+  font-weight: 700;
+}
+
+/* Nested list styling */
+.regulations ul > li > ul,
+.regulations ul > li > ol {
+  margin-top: 0.7rem;
+  margin-left: 1.2rem;
+  padding-left: 0.5rem;
+  list-style: disc inside;
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+.regulations ul > li > ul > li {
+  background: none;
+  border: none;
+  padding: 0.3rem 0 0.3rem 1.2rem;
+  margin-bottom: 0.2rem;
+  box-shadow: none;
+}
+
+.regulations h4, .regulations p {
+  margin-top: 1.5rem;
+  font-size: 1.1rem;
+  color: #b71c1c;
+  font-weight: 500;
+}
+
+/* Download button styling */
+.proclamation-download-btn {
+  display: inline-block;
+  margin-top: 0.7rem;
+  text-decoration: none;
+}
+.proclamation-download-btn button,
+.proclamation-download-btn {
+  background: #b71c1c;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.7rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(183,28,28,0.10);
+  transition: background 0.2s, transform 0.2s;
+  outline: none;
+}
+.proclamation-download-btn button:hover,
+.proclamation-download-btn:hover {
+  background: #111;
+  color: #fff;
+  transform: translateY(-2px) scale(1.04);
+}
+
+/* Responsive layout */
+@media (max-width: 900px) {
+  .regulations {
+    padding: 1rem;
+  }
+  .regulations-image img {
+    max-width: 220px;
+  }
+}
+@media (max-width: 600px) {
+  .regulations {
+    padding: 0.5rem;
+  }
+  .regulations-image img {
+    max-width: 100%;
+  }
+}
+
+/* Dark mode support */
+[data-theme="dark"] .regulations {
+  background: #111;
+  color: #fff;
+}
+[data-theme="dark"] .regulations-image img {
+  background: linear-gradient(135deg, #222 60%, #b71c1c 100%);
+  border-color: #b71c1c;
+}
+[data-theme="dark"] .regulations h1,
+[data-theme="dark"] .regulations h2,
+[data-theme="dark"] .regulations h4 {
+  color: #b71c1c;
+}
+[data-theme="dark"] .regulations h3 {
+  color: #fff;
+}
+[data-theme="dark"] .regulations ul > li {
+  background: #2a2a2a;
+  color: #fff;
+  border-left: 5px solid #b71c1c;
+}
+[data-theme="dark"] .regulations ul > li:before {
+  color: #b71c1c;
+}
+[data-theme="dark"] .proclamation-download-btn button,
+[data-theme="dark"] .proclamation-download-btn {
+  background: #b71c1c;
+  color: #fff;
+}
