@@ -33,12 +33,24 @@ export default function NavBar() {
               <div className="nav-link-item nav-has-dropdown">
                 Resource Center <i className="fi fi-rr-angle-small-down"></i>
                 <div className="nav-submenu">
-                  <a href="#value-proposition" className="nav-submenu-item">Value Proposition</a>
-                  <a href="#proclamations" className="nav-submenu-item">Proclamations</a>
-                  <a href="#regulations" className="nav-submenu-item">Regulations</a>
-                  <a href="#directives" className="nav-submenu-item">Directives</a>
-                  <a href="#annual-executive" className="nav-submenu-item">Annual Executive</a>
-                  <a href="#media-gallery" className="nav-submenu-item">Media Gallery</a>
+                  <a href="#value-proposition" className="nav-submenu-item" onClick={(e) => {e.preventDefault(); window.location.hash = '#value-proposition'; setIsDropdownOpen(false);}}>
+                    Value Proposition
+                  </a>
+                  <a href="#proclamations" className="nav-submenu-item" onClick={(e) => {e.preventDefault(); window.location.hash = '#proclamations'; setIsDropdownOpen(false);}}>
+                    Proclamations
+                  </a>
+                  <a href="#regulations" className="nav-submenu-item" onClick={(e) => {e.preventDefault(); window.location.hash = '#regulations'; setIsDropdownOpen(false);}}>
+                    Regulations
+                  </a>
+                  <a href="#directives" className="nav-submenu-item" onClick={(e) => {e.preventDefault(); window.location.hash = '#directives'; setIsDropdownOpen(false);}}>
+                    Directives
+                  </a>
+                  <a href="#annual-executive" className="nav-submenu-item" onClick={(e) => {e.preventDefault(); window.location.hash = '#annual-executive'; setIsDropdownOpen(false);}}>
+                    Annual Executive
+                  </a>
+                  <a href="#media-gallery" className="nav-submenu-item" onClick={(e) => {e.preventDefault(); window.location.hash = '#media-gallery'; setIsDropdownOpen(false);}}>
+                    Media Gallery
+                  </a>
                 </div>
               </div>
               <a href="#opportunity" className="nav-link-item">Opportunity & Incentive <i class="fi fi-rr-angle-small-down"></i></a>

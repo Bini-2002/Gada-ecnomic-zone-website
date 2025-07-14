@@ -1,4 +1,5 @@
-import { valueProposition } from '../images/value-proposition.jpg';
+import valueProposition from '../images/value-proposition.jpg';
+import '../valueproposition.css';
 
 export default function ValueProposition() {
   return (

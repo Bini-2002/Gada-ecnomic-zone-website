@@ -1,0 +1,78 @@
+/* Modern, visually appealing styles for Value Proposition page */
+.value-propostions {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: var(--background-secondary, #f8f9fa);
+  border-radius: 18px;
+  box-shadow: 0 6px 32px rgba(0,0,0,0.08);
+  font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+  color: var(--text-main, #222);
+}
+
+.value-propostions h1 {
+  text-align: center;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  letter-spacing: 2px;
+  color: var(--primary, #1a4d8f);
+}
+
+.value-proposition-image {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+.value-proposition-image img {
+  max-width: 380px;
+  height: auto;
+  border-radius: 14px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.10);
+  transition: transform 0.3s;
+}
+.value-proposition-image img:hover {
+  transform: scale(1.04);
+}
+
+.value-propostions p {
+  font-size: 1.15rem;
+  line-height: 1.8;
+  color: #444;
+  margin-top: 1.5rem;
+  background: var(--background-main, #fff);
+  border-radius: 10px;
+  padding: 1.2rem 1rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+}
+
+/* Responsive layout */
+@media (max-width: 900px) {
+  .value-propostions {
+    padding: 1rem;
+  }
+  .value-proposition-image img {
+    max-width: 220px;
+  }
+}
+@media (max-width: 600px) {
+  .value-propostions {
+    padding: 0.5rem;
+  }
+  .value-proposition-image img {
+    max-width: 100%;
+  }
+}
+
+/* Dark mode support */
+[data-theme="dark"] .value-propostions {
+  background: #181c24;
+  color: #e2e6ee;
+}
+[data-theme="dark"] .value-propostions h1 {
+  color: #90caf9;
+}
+[data-theme="dark"] .value-propostions p {
+  background: #23283a;
+  color: #e2e6ee;
+}

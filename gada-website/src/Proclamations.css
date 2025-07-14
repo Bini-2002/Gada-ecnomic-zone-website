@@ -1,0 +1,201 @@
+/* Modern, visually appealing styles for Proclamations page with black and red theme */
+.proclamations {
+  max-width: 1100px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 6px 32px rgba(0,0,0,0.08);
+  font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+  color: #111;
+}
+
+.proclamations h1 {
+  text-align: center;
+  font-size: 2.7rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  letter-spacing: 2px;
+  color: #b71c1c;
+}
+
+.proclamation-image {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+.proclamation-image img {
+  max-width: 340px;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.10);
+  transition: transform 0.3s;
+}
+.proclamation-image img:hover {
+  transform: scale(1.04);
+}
+
+.proclamations h2 {
+  font-size: 1.5rem;
+  margin-top: 2rem;
+  color: #b71c1c;
+  font-weight: 600;
+}
+
+.proclamations h3 {
+  font-size: 1.15rem;
+  margin-top: 1.2rem;
+  color: #111;
+  font-weight: 500;
+}
+
+.proclamations ul {
+  margin: 0.5rem 0 1.5rem 1.5rem;
+  padding: 0;
+  list-style: disc inside;
+  font-size: 1.05rem;
+  color: #111;
+}
+
+.proclamations li {
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
+}
+
+.proclamations h4 {
+  margin-top: 1.5rem;
+  font-size: 1.1rem;
+  color: #b71c1c;
+  font-weight: 500;
+}
+
+.proclamation-download-btn {
+  display: inline-block;
+  margin-top: 0.7rem;
+  text-decoration: none;
+}
+.proclamation-download-btn button,
+.proclamation-download-btn {
+  background: #b71c1c;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.7rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: background 0.2s, transform 0.2s;
+}
+.proclamation-download-btn button:hover,
+.proclamation-download-btn:hover {
+  background: #111;
+  color: #fff;
+  transform: translateY(-2px) scale(1.04);
+}
+
+/* Gallery for extra images */
+.proclamation-image + .proclamation-image {
+  margin-top: 1.5rem;
+}
+
+/* Responsive layout */
+@media (max-width: 900px) {
+  .proclamations {
+    padding: 1rem;
+  }
+  .proclamation-image img {
+    max-width: 220px;
+  }
+}
+@media (max-width: 600px) {
+  .proclamations {
+    padding: 0.5rem;
+  }
+  .proclamation-image {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .proclamation-image img {
+    max-width: 100%;
+  }
+}
+
+/* Card style for sections */
+.proclamation-card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  padding: 1.5rem 1.2rem;
+  margin-bottom: 2rem;
+  color: #111;
+}
+
+.proclamation-source {
+  font-size: 0.95rem;
+  color: #b71c1c;
+  margin-bottom: 1rem;
+}
+
+.proclamation-gallery {
+  display: flex;
+  gap: 1.2rem;
+  justify-content: center;
+  margin: 2rem 0;
+}
+.proclamation-gallery img {
+  max-width: 220px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.proclamation-points {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+}
+@media (max-width: 800px) {
+  .proclamation-points {
+    grid-template-columns: 1fr;
+  }
+}
+
+.proclamation-point {
+  background: #f4f6fa;
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+  margin-bottom: 0.5rem;
+  color: #111;
+}
+
+/* Dark mode support */
+[data-theme="dark"] .proclamations {
+  background: #111;
+  color: #fff;
+}
+[data-theme="dark"] .proclamation-card {
+  background: #222;
+  color: #fff;
+}
+[data-theme="dark"] .proclamation-point {
+  background: #222;
+  color: #fff;
+}
+[data-theme="dark"] .proclamation-download-btn button,
+[data-theme="dark"] .proclamation-download-btn {
+  background: #b71c1c;
+  color: #fff;
+}
+[data-theme="dark"] .proclamations h1,
+[data-theme="dark"] .proclamations h2,
+[data-theme="dark"] .proclamations h4 {
+  color: #b71c1c;
+}
+[data-theme="dark"] .proclamations h3 {
+  color: #fff;
+}
+[data-theme="dark"] .proclamation-source {
+  color: #b71c1c;
+}

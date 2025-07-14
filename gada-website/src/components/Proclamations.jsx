@@ -1,11 +1,17 @@
-import { Proclamations } from '../images/proclamation.jpg';
+import ProclamationsImg from '../images/proclamation.png';
+import Proclamations1 from '../images/proclamation-1.jpg';
+import Proclamations2 from '../images/proclamation-2.jpg';
+import '../Proclamations.css';
+import proclamationFile1322 from '../Files/Special-Economic-Zone-Proclamation-No.-1322_2024-3.pdf';
+import proclamationFile226 from '../Files/Proclamation-226-2020.pdf';
+
 
 export default function Proclamations() {
   return (
     <div className="proclamations">
       <h1>PROCLAMATIONS</h1>
       <div className="proclamation-image">
-        <img src={Proclamations} alt="Proclamations" />
+        <img src={ProclamationsImg} alt="Proclamations" />
       </div>
       <h2>Key Points: Special Economic Zone Proclamation No. 1322/2024</h2>
       <p>(From Special-Economic-Zone-Proclamation-No.-1322_2024-3.pdf)</p>
@@ -21,8 +27,14 @@ export default function Proclamations() {
       </ul>
 
       <h4>Learn more about the Gada Special Economic Zone and its legal framework: Download to Proclamation No. 1322/2024.</h4>
+      <a href={proclamationFile1322} download className="proclamation-download-btn">
+        <button type="button">Download</button>
+      </a>
 
-      <button>Download</button>
+      <div className="proclamation-image">
+        <img src={Proclamations1} alt="Proclamations" />
+        <img src={Proclamations2} alt="Proclamations" />
+      </div>
 
       <h2>Key Points from Proclamation No. 226/2020 (Gada Special Economic Zone)</h2>
 
@@ -67,8 +79,9 @@ export default function Proclamations() {
       </ul>
 
       <h4>Learn more about the Gada Special Economic Zone and its legal framework: download to Proclamation No. 226/2020.</h4>
-
-      <button>Download</button>
+      <a href={proclamationFile226} download className="proclamation-download-btn">
+        <button type="button">Download</button>
+      </a>
     </div>
   );
 }
