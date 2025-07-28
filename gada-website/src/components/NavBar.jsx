@@ -20,7 +20,7 @@ export default function NavBar() {
           {isDropdownOpen && (
             <div className="nav-dropdown-list">
               <div className="nav-link-item nav-has-dropdown">
-                One Stop Services <i className="fi fi-rr-angle-small-down"></i>
+                One Stop Services <i className="fi fi-rr-angle-small-right"></i>
                 <div className="nav-submenu">
                   <a href="#standard" className="nav-submenu-item" onClick={(e) => {e.preventDefault(); window.location.hash = '#standard';}}>
                     Standard Operation Procedure
@@ -31,7 +31,7 @@ export default function NavBar() {
                 </div>
               </div>
               <div className="nav-link-item nav-has-dropdown">
-                Resource Center <i className="fi fi-rr-angle-small-down"></i>
+                Resource Center <i className="fi fi-rr-angle-small-right"></i>
                 <div className="nav-submenu">
                   <a href="#value-proposition" className="nav-submenu-item" onClick={(e) => {e.preventDefault(); window.location.hash = '#value-proposition'; setIsDropdownOpen(false);}}>
                     Value Proposition
@@ -53,11 +53,11 @@ export default function NavBar() {
                   </a>
                 </div>
               </div>
-              <a href="#opportunity" className="nav-link-item">Opportunity & Incentive <i class="fi fi-rr-angle-small-down"></i></a>
-              <a href="#news" className="nav-link-item">News & Events <i class="fi fi-rr-angle-small-down"></i></a>
-              <a href="#services" className="nav-link-item">Services <i class="fi fi-rr-angle-small-down"></i></a>
-              <a href="#value" className="nav-link-item">Value Proposition <i class="fi fi-rr-angle-small-down"></i></a>
-              <a href="#involved" className="nav-link-item">Get Involved <i class="fi fi-rr-angle-small-down"></i></a>
+              <a href="#opportunity" className="nav-link-item">Opportunity & Incentive <i className="fi fi-rr-angle-small-right"></i></a>
+              <a href="#news" className="nav-link-item">News & Events <i className="fi fi-rr-angle-small-right"></i></a>
+              <a href="#services" className="nav-link-item">Services <i className="fi fi-rr-angle-small-right"></i></a>
+              <a href="#value" className="nav-link-item">Value Proposition <i className="fi fi-rr-angle-small-right"></i></a>
+              <a href="#involved" className="nav-link-item">Get Involved <i className="fi fi-rr-angle-small-right"></i></a>
               <a href="#log-in" className="nav-link-item">Log in </a>
             </div>
           )}

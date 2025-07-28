@@ -46,7 +46,7 @@ function RegulationsPage() {
         <li>Aims to create employment opportunities and enhance regional economic benefits.</li>
       </ul>
 
-      <p>Learn more about the Gada Special Economic Zone and its legal framework: download to Regulation No. 228/2022.</p>
+      <p><strong>Learn more about the Gada Special Economic Zone and its legal framework: download to Regulation No. 228/2022.</strong></p>
 
       <a href={RegulationFile1} download className="proclamation-download-btn">
         <button type="button">Download</button>
@@ -91,6 +91,8 @@ function RegulationsPage() {
           enhanced exemptions and facilitation services.
         </li>
       </ul>
+
+      <p><strong>Learn more about the Gada Special Economic Zone and its legal framework: download to Regulation No. 512/2022.</strong></p>
 
       <a href={RegulationFile2} download className="proclamation-download-btn">
         <button type="button">Download</button>

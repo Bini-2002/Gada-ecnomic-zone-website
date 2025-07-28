@@ -1,4 +1,4 @@
-/* Modern, visually appealing styles for Proclamations page with black and red theme */
+/* Modern, visually appealing styles for Proclamations page with black and red theme and impressive listing */
 .proclamations {
   max-width: 1100px;
   margin: 2rem auto;
@@ -50,17 +50,59 @@
   font-weight: 500;
 }
 
+/* Impressive listing styles */
 .proclamations ul {
-  margin: 0.5rem 0 1.5rem 1.5rem;
+  margin: 1.2rem 0 2rem 0;
   padding: 0;
-  list-style: disc inside;
-  font-size: 1.05rem;
+  list-style: none;
+  font-size: 1.08rem;
   color: #111;
 }
+.proclamations ul > li {
+  position: relative;
+  background: #fbe9e7;
+  border-left: 5px solid #b71c1c;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  padding: 1rem 1.2rem 1rem 2.2rem;
+  box-shadow: 0 2px 8px rgba(183,28,28,0.07);
+  transition: background 0.2s;
+}
+.proclamations ul > li:hover {
+  background: #fff3e0;
+}
+.proclamations ul > li:before {
+  content: '\2022';
+  position: absolute;
+  left: 1rem;
+  top: 1.1rem;
+  font-size: 1.5rem;
+  color: #b71c1c;
+  font-weight: bold;
+}
 
-.proclamations li {
-  margin-bottom: 0.5rem;
-  line-height: 1.6;
+.proclamations ul li strong {
+  color: #b71c1c;
+  font-weight: 700;
+}
+
+/* Nested list styling */
+.proclamations ul > li > ul,
+.proclamations ul > li > ol {
+  margin-top: 0.7rem;
+  margin-left: 1.2rem;
+  padding-left: 0.5rem;
+  list-style: disc inside;
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+.proclamations ul > li > ul > li {
+  background: none;
+  border: none;
+  padding: 0.3rem 0 0.3rem 1.2rem;
+  margin-bottom: 0.2rem;
+  box-shadow: none;
 }
 
 .proclamations h4 {
@@ -170,7 +212,7 @@
   color: #111;
 }
 
-/* Dark mode support - all text white except red headings */
+/* Dark mode support - all text white except red headings and impressive listing */
 [data-theme="dark"] .proclamations {
   background: #111;
   color: #fff;
@@ -194,11 +236,19 @@
   color: #b71c1c;
 }
 [data-theme="dark"] .proclamations h3,
+[data-theme="dark"] .proclamations ul > li,
 [data-theme="dark"] .proclamations ul,
 [data-theme="dark"] .proclamations li,
 [data-theme="dark"] .proclamation-card,
 [data-theme="dark"] .proclamation-point {
   color: #fff;
+}
+[data-theme="dark"] .proclamations ul > li {
+  background: #2a2a2a;
+  border-left: 5px solid #b71c1c;
+}
+[data-theme="dark"] .proclamations ul > li:before {
+  color: #b71c1c;
 }
 [data-theme="dark"] .proclamation-source {
   color: #b71c1c;

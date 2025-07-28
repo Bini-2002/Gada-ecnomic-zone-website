@@ -10,6 +10,9 @@ import Inverstor from './components/Inverstor.jsx';
 import ValueProposition from './components/ValueProposition.jsx';
 import Proclamations from './components/Proclamations.jsx';
 import RegulationsPage from './components/Regulations.jsx';
+import Directives from './components/Directives.jsx';
+import AnnualExecutive from './components/AnnualExecutive.jsx';
+import MediaGallery from './components/MediaGallery.jsx';
 import { ThemeContext } from './components/ThemeContext';
 
 
@@ -44,6 +47,12 @@ export default function App() {
         return <Proclamations />;
       case '#regulations':
         return <RegulationsPage />;
+      case '#directives':
+        return <Directives />;
+      case '#annual-executive':
+        return <AnnualExecutive />;
+      case '#media-gallery':
+        return <MediaGallery />;
       default:
         return (
           <>

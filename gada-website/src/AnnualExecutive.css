@@ -1,0 +1,128 @@
+/* Modern, visually appealing styles for Annual Executive table */
+.annual-executive {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 6px 32px rgba(0,0,0,0.08);
+  font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+  color: #111;
+}
+
+.annual-executive h1 {
+  text-align: center;
+  font-size: 2.3rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  letter-spacing: 2px;
+  color: #b71c1c;
+}
+
+.annual-executive-table-container {
+  overflow-x: auto;
+}
+
+.annual-executive-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(183,28,28,0.07);
+  margin-bottom: 2rem;
+}
+
+.annual-executive-table th, .annual-executive-table td {
+  padding: 1.2rem 1rem;
+  text-align: left;
+  font-size: 1.08rem;
+}
+
+.annual-executive-table th {
+  background: #b71c1c;
+  color: #fff;
+  font-weight: 700;
+  border-top-left-radius: 14px;
+  border-top-right-radius: 14px;
+}
+
+.annual-executive-table tr {
+  border-bottom: 2px solid #b71c1c;
+}
+
+.annual-executive-table td {
+  background: #fbe9e7;
+  color: #111;
+  border-bottom: 1px solid #fff3e0;
+}
+
+.annual-executive-table tr:last-child td {
+  border-bottom: none;
+}
+
+.annual-executive-table ul {
+  margin: 0.5rem 0 0 0;
+  padding: 0;
+  list-style: none;
+}
+.annual-executive-table ul li {
+  position: relative;
+  background: #fff;
+  border-left: 4px solid #b71c1c;
+  border-radius: 7px;
+  margin-bottom: 0.7rem;
+  padding: 0.7rem 1rem 0.7rem 1.5rem;
+  box-shadow: 0 1px 4px rgba(183,28,28,0.07);
+  font-size: 1rem;
+  transition: background 0.2s;
+}
+.annual-executive-table ul li:hover {
+  background: #fff3e0;
+}
+.annual-executive-table ul li:before {
+  content: '\2022';
+  position: absolute;
+  left: 0.5rem;
+  top: 0.7rem;
+  font-size: 1.2rem;
+  color: #b71c1c;
+  font-weight: bold;
+}
+
+/* Responsive layout */
+@media (max-width: 700px) {
+  .annual-executive {
+    padding: 1rem;
+  }
+  .annual-executive-table th, .annual-executive-table td {
+    padding: 0.7rem 0.5rem;
+    font-size: 0.98rem;
+  }
+}
+
+/* Dark mode support */
+[data-theme="dark"] .annual-executive {
+  background: #111;
+  color: #fff;
+}
+[data-theme="dark"] .annual-executive-table {
+  background: #222;
+  color: #fff;
+}
+[data-theme="dark"] .annual-executive-table th {
+  background: #b71c1c;
+  color: #fff;
+}
+[data-theme="dark"] .annual-executive-table td {
+  background: #2a2a2a;
+  color: #fff;
+}
+[data-theme="dark"] .annual-executive-table ul li {
+  background: #222;
+  color: #fff;
+  border-left: 4px solid #b71c1c;
+}
+[data-theme="dark"] .annual-executive-table ul li:before {
+  color: #b71c1c;
+}
