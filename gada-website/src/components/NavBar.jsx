@@ -8,6 +8,8 @@ export default function NavBar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isOneStopOpen, setIsOneStopOpen] = useState(false);
+  const [isResourceOpen, setIsResourceOpen] = useState(false);
   const { isDarkMode, toggleTheme } = useContext(ThemeContext);
 
   return (
@@ -19,9 +21,15 @@ export default function NavBar() {
           </button>
           {isDropdownOpen && (
             <div className="nav-dropdown-list">
-              <div className="nav-link-item nav-has-dropdown">
-                One Stop Services <i className="fi fi-rr-angle-small-right"></i>
-                <div className="nav-submenu">
+              <div className="nav-link-item nav-has-dropdown"
+                onMouseEnter={() => setIsOneStopOpen(true)}
+                onMouseLeave={() => setIsOneStopOpen(false)}
+                tabIndex={0}
+                onFocus={() => setIsOneStopOpen(true)}
+                onBlur={() => setIsOneStopOpen(false)}
+              >
+                One Stop Services <i className={isOneStopOpen ? "fi fi-rr-angle-small-down" : "fi fi-rr-angle-small-right"}></i>
+                <div className="nav-submenu" style={{ display: isOneStopOpen ? 'block' : 'none' }}>
                   <a href="#standard" className="nav-submenu-item" onClick={(e) => {e.preventDefault(); window.location.hash = '#standard';}}>
                     Standard Operation Procedure
                   </a>
@@ -30,9 +38,15 @@ export default function NavBar() {
                   </a>
                 </div>
               </div>
-              <div className="nav-link-item nav-has-dropdown">
-                Resource Center <i className="fi fi-rr-angle-small-right"></i>
-                <div className="nav-submenu">
+              <div className="nav-link-item nav-has-dropdown"
+                onMouseEnter={() => setIsResourceOpen(true)}
+                onMouseLeave={() => setIsResourceOpen(false)}
+                tabIndex={0}
+                onFocus={() => setIsResourceOpen(true)}
+                onBlur={() => setIsResourceOpen(false)}
+              >
+                Resource Center <i className={isResourceOpen ? "fi fi-rr-angle-small-down" : "fi fi-rr-angle-small-right"}></i>
+                <div className="nav-submenu" style={{ display: isResourceOpen ? 'block' : 'none' }}>
                   <a href="#value-proposition" className="nav-submenu-item" onClick={(e) => {e.preventDefault(); window.location.hash = '#value-proposition'; setIsDropdownOpen(false);}}>
                     Value Proposition
                   </a>
