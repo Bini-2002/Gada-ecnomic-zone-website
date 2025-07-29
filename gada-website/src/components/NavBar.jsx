@@ -10,6 +10,7 @@ export default function NavBar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isOneStopOpen, setIsOneStopOpen] = useState(false);
   const [isResourceOpen, setIsResourceOpen] = useState(false);
+  const [isOpportunityOpen, setIsOpportunityOpen] = useState(false);
   const { isDarkMode, toggleTheme } = useContext(ThemeContext);
 
   return (
@@ -22,52 +23,86 @@ export default function NavBar() {
           {isDropdownOpen && (
             <div className="nav-dropdown-list">
               <div className="nav-link-item nav-has-dropdown"
-                onMouseEnter={() => setIsOneStopOpen(true)}
-                onMouseLeave={() => setIsOneStopOpen(false)}
                 tabIndex={0}
-                onFocus={() => setIsOneStopOpen(true)}
-                onBlur={() => setIsOneStopOpen(false)}
               >
-                One Stop Services <i className={isOneStopOpen ? "fi fi-rr-angle-small-down" : "fi fi-rr-angle-small-right"}></i>
+                One Stop Services
+                <i
+                  className={isOneStopOpen ? "fi fi-rr-angle-small-down" : "fi fi-rr-angle-small-right"}
+                  style={{ marginLeft: 6, cursor: 'pointer' }}
+                  onClick={e => {
+                    e.stopPropagation();
+                    setIsOneStopOpen(v => !v);
+                  }}
+                  tabIndex={0}
+                  aria-label="Toggle One Stop submenu"
+                ></i>
                 <div className="nav-submenu" style={{ display: isOneStopOpen ? 'block' : 'none' }}>
-                  <a href="#standard" className="nav-submenu-item" onClick={(e) => {e.preventDefault(); window.location.hash = '#standard';}}>
+                  <a href="#standard" className="nav-submenu-item" onClick={(e) => {e.preventDefault(); window.location.hash = '#standard'; setIsDropdownOpen(false); setIsOneStopOpen(false);}}>
                     Standard Operation Procedure
                   </a>
-                  <a href="#investor" className="nav-submenu-item" onClick={(e) => {e.preventDefault(); window.location.hash = '#investor';}}>
+                  <a href="#investor" className="nav-submenu-item" onClick={(e) => {e.preventDefault(); window.location.hash = '#investor'; setIsDropdownOpen(false); setIsOneStopOpen(false);}}>
                     Investor Roadmap
                   </a>
                 </div>
               </div>
               <div className="nav-link-item nav-has-dropdown"
-                onMouseEnter={() => setIsResourceOpen(true)}
-                onMouseLeave={() => setIsResourceOpen(false)}
                 tabIndex={0}
-                onFocus={() => setIsResourceOpen(true)}
-                onBlur={() => setIsResourceOpen(false)}
               >
-                Resource Center <i className={isResourceOpen ? "fi fi-rr-angle-small-down" : "fi fi-rr-angle-small-right"}></i>
+                Resource Center
+                <i
+                  className={isResourceOpen ? "fi fi-rr-angle-small-down" : "fi fi-rr-angle-small-right"}
+                  style={{ marginLeft: 6, cursor: 'pointer' }}
+                  onClick={e => {
+                    e.stopPropagation();
+                    setIsResourceOpen(v => !v);
+                  }}
+                  tabIndex={0}
+                  aria-label="Toggle Resource submenu"
+                ></i>
                 <div className="nav-submenu" style={{ display: isResourceOpen ? 'block' : 'none' }}>
-                  <a href="#value-proposition" className="nav-submenu-item" onClick={(e) => {e.preventDefault(); window.location.hash = '#value-proposition'; setIsDropdownOpen(false);}}>
+                  <a href="#value-proposition" className="nav-submenu-item" onClick={(e) => {e.preventDefault(); window.location.hash = '#value-proposition'; setIsDropdownOpen(false); setIsResourceOpen(false);}}>
                     Value Proposition
                   </a>
-                  <a href="#proclamations" className="nav-submenu-item" onClick={(e) => {e.preventDefault(); window.location.hash = '#proclamations'; setIsDropdownOpen(false);}}>
+                  <a href="#proclamations" className="nav-submenu-item" onClick={(e) => {e.preventDefault(); window.location.hash = '#proclamations'; setIsDropdownOpen(false); setIsResourceOpen(false);}}>
                     Proclamations
                   </a>
-                  <a href="#regulations" className="nav-submenu-item" onClick={(e) => {e.preventDefault(); window.location.hash = '#regulations'; setIsDropdownOpen(false);}}>
+                  <a href="#regulations" className="nav-submenu-item" onClick={(e) => {e.preventDefault(); window.location.hash = '#regulations'; setIsDropdownOpen(false); setIsResourceOpen(false);}}>
                     Regulations
                   </a>
-                  <a href="#directives" className="nav-submenu-item" onClick={(e) => {e.preventDefault(); window.location.hash = '#directives'; setIsDropdownOpen(false);}}>
+                  <a href="#directives" className="nav-submenu-item" onClick={(e) => {e.preventDefault(); window.location.hash = '#directives'; setIsDropdownOpen(false); setIsResourceOpen(false);}}>
                     Directives
                   </a>
-                  <a href="#annual-executive" className="nav-submenu-item" onClick={(e) => {e.preventDefault(); window.location.hash = '#annual-executive'; setIsDropdownOpen(false);}}>
+                  <a href="#annual-executive" className="nav-submenu-item" onClick={(e) => {e.preventDefault(); window.location.hash = '#annual-executive'; setIsDropdownOpen(false); setIsResourceOpen(false);}}>
                     Annual Executive
                   </a>
-                  <a href="#media-gallery" className="nav-submenu-item" onClick={(e) => {e.preventDefault(); window.location.hash = '#media-gallery'; setIsDropdownOpen(false);}}>
+                  <a href="#media-gallery" className="nav-submenu-item" onClick={(e) => {e.preventDefault(); window.location.hash = '#media-gallery'; setIsDropdownOpen(false); setIsResourceOpen(false);}}>
                     Media Gallery
                   </a>
                 </div>
               </div>
-              <a href="#opportunity" className="nav-link-item">Opportunity & Incentive <i className="fi fi-rr-angle-small-right"></i></a>
+              <div className="nav-link-item nav-has-dropdown"
+                tabIndex={0}
+              >
+                Opportunity & Incentive
+                <i
+                  className={isOpportunityOpen ? "fi fi-rr-angle-small-down" : "fi fi-rr-angle-small-right"}
+                  style={{ marginLeft: 6, cursor: 'pointer' }}
+                  onClick={e => {
+                    e.stopPropagation();
+                    setIsOpportunityOpen(v => !v);
+                  }}
+                  tabIndex={0}
+                  aria-label="Toggle Opportunity submenu"
+                ></i>
+                <div className="nav-submenu" style={{ display: isOpportunityOpen ? 'block' : 'none' }}>
+                  <a href="#investments" className="nav-submenu-item" onClick={(e) => {e.preventDefault(); window.location.hash = '#investments'; setIsDropdownOpen(false); setIsOpportunityOpen(false);}}>
+                    Investments
+                  </a>
+                  <a href="#incentives" className="nav-submenu-item" onClick={() => setIsOpportunityOpen(false)}>
+                    Incentives
+                  </a>
+                </div>
+              </div>
               <a href="#news" className="nav-link-item">News & Events <i className="fi fi-rr-angle-small-right"></i></a>
               <a href="#services" className="nav-link-item">Services <i className="fi fi-rr-angle-small-right"></i></a>
               <a href="#value" className="nav-link-item">Value Proposition <i className="fi fi-rr-angle-small-right"></i></a>

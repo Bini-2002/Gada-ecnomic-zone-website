@@ -13,6 +13,7 @@ import RegulationsPage from './components/Regulations.jsx';
 import Directives from './components/Directives.jsx';
 import AnnualExecutive from './components/AnnualExecutive.jsx';
 import MediaGallery from './components/MediaGallery.jsx';
+import Investments from './components/Investments.jsx';
 import { ThemeContext } from './components/ThemeContext';
 
 
@@ -53,6 +54,8 @@ export default function App() {
         return <AnnualExecutive />;
       case '#media-gallery':
         return <MediaGallery />;
+      case '#investments':
+        return <Investments />;
       default:
         return (
           <>
