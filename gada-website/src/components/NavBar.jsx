@@ -103,7 +103,7 @@ export default function NavBar() {
                   </a>
                 </div>
               </div>
-              <a href="#news" className="nav-link-item">News & Events <i className="fi fi-rr-angle-small-right"></i></a>
+            <a href="#news" className="nav-link-item" onClick={(e) => {e.preventDefault(); window.location.hash = '#news'; setIsDropdownOpen(false);}}>News & Events <i className="fi fi-rr-angle-small-right"></i></a>
               <a href="#services" className="nav-link-item">Services <i className="fi fi-rr-angle-small-right"></i></a>
               <a href="#value" className="nav-link-item">Value Proposition <i className="fi fi-rr-angle-small-right"></i></a>
               <a href="#involved" className="nav-link-item">Get Involved <i className="fi fi-rr-angle-small-right"></i></a>
@@ -126,7 +126,7 @@ export default function NavBar() {
         </div>
       </div>
 
-      <div className="navbar-grid-right">
+            {/* News & Events link is only in the dropdown above */}
         <div className={`menu-container ${isMenuOpen ? 'active' : ''}`}> 
           <div className="nav-links-container">
             <div className="nav-links">
@@ -152,11 +152,10 @@ export default function NavBar() {
             <i className={isDarkMode ? 'fi fi-rr-sun' : 'fi fi-rr-moon'}></i>
           </button>
         </div>
-      </div>
 
-      <button className="hamburger" onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Toggle menu">
-        <i className={isMenuOpen ? 'fi fi-rr-cross' : 'fi fi-rr-menu-burger'}></i>
-      </button>
+        <button className="hamburger" onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Toggle menu">
+          <i className={isMenuOpen ? 'fi fi-rr-cross' : 'fi fi-rr-menu-burger'}></i>
+        </button>
     </nav>
   );
 }

@@ -325,7 +325,7 @@ body {
   left: 0;
   top: 100%;
   min-width: 220px;
-  background-color: #a52a2a; /* dark gray */
+  background-color: #898282; /* dark gray */
   color : white;
   border-radius: 8px;
   box-shadow: 0 8px 16px 0 rgba(0,0,0,0.12);
@@ -340,7 +340,7 @@ body {
 
 .nav-submenu-item {
   display: block;
-  color: #ffffff; /* White text */
+  color: #000000; 
   padding: 12px 20px;
   text-decoration: none;
   font-size: 1rem;

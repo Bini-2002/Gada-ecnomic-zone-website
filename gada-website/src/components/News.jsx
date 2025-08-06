@@ -1,61 +1,75 @@
-import '../News.css';
-import '../index.css'; // Ensure you have the correct path to your CSS file
-import newsImage1 from '../News-image/news-image-left-1.jpg';
-import newsImage2 from '../News-image/news-image-left-2.jpg';
-import newsImage3 from '../News-image/news-image-left-3.jpg';
-import ClockIcon from '../icons/clock.svg'; // Import the clock icon
+import React, { useState } from "react";
+import "../News.css";
 
-const newsData = [
-  {
-    image: newsImage1,
-    date: { day: '03', month: 'Jul', year: '2025' },
-    title: 'GSEZ Secures Major Investment for Infrastructure',
-    detail: 'The Gada Special Economic Zone has announced a landmark deal with international investors to fund new road and utility projects.'
-  },
-  {
-    image: newsImage2,
-    date: { day: '01', month: 'Jul', year: '2025' },
-    title: 'New Tech Hub to Create 5,000 Jobs in Gada',
-    detail: 'A partnership with a leading tech firm will establish a new innovation hub, bringing thousands of skilled jobs to the region.'
-  },
-  {
-    image: newsImage3,
-    date: { day: '28', month: 'Jun', year: '2025' },
-    title: 'GSEZ Launches Green Energy Initiative',
-    detail: 'The zone is pioneering sustainable development with a new initiative focused on solar and wind power for its industrial parks.'
+function NewsCard({ title, details, date, image }) {
+  const [showMore, setShowMore] = useState(false);
+  const maxLen = 220;
+  const isLong = details.length > maxLen;
+  // Only pick the first image if multiple are present (comma, semicolon, or space separated)
+  let firstImage = image;
+  if (typeof image === 'string') {
+    if (image.includes(',')) {
+      firstImage = image.split(',')[0].trim();
+    } else if (image.includes(';')) {
+      firstImage = image.split(';')[0].trim();
+    } else if (image.includes(' ')) {
+      firstImage = image.split(' ')[0].trim();
+    }
   }
-];
-
-export default function News() {
   return (
-    <div className="news-container">
-      {newsData.map((article, index) => (
-        <div className="news-card" key={index}>
-          <div className="news-header">
-            <div className="news-date">
-              <div className="news-date-icon">
-                <img src={ClockIcon} alt="Date" />
-              </div>
-              <span className="news-day">{article.date.day}</span>
-              <span className="news-month">{article.date.month}</span>
-              <span className="news-year">{article.date.year}</span>
-            </div>
-            <div className="news-separator"></div>
-            <div className="news-image-container">
-              <img src={article.image} alt={article.title} />
-            </div>
-          </div>
-          <div className="news-title">
-             <h2>{article.title}</h2>
-          </div>
-          <div className="news-detail">
-            <p>{article.detail}</p>
-          </div>
-          <div className="news-continue-reading">
-            <a href="#">Continue reading</a>
-          </div>
-        </div>
-      ))}
+    <div className="news-card">
+      <img src={firstImage} alt={title} className="news-card-img" />
+      <div className="news-card-content">
+        <h3 className="news-card-title">{title}</h3>
+        <div className="news-card-date">{date}</div>
+        <p className="news-card-details">
+          {showMore || !isLong ? details : details.slice(0, maxLen) + "..."}{" "}
+          {isLong && (
+            <span
+              className="show-more-btn"
+              onClick={() => setShowMore((v) => !v)}
+            >
+              {showMore ? " Show less" : " Show more"}
+            </span>
+          )}
+        </p>
+      </div>
     </div>
   );
 }
+
+const newsData = [
+  {
+    title: "GSEZ is building dedicated substation",
+    details: `Gada Special Economic Zone (GSEZ) is equipped with its own dedicated substation, currently under construction by Ethiopian Electric Power (EEP), which is expected to generate 230 MW/h starting from July 2025. This strategic infrastructure ensures reliable and uninterrupted power supply exclusively for industries within the zone, thereby eliminating one of the major constraints often faced by investors in emerging markets. With this vital utility in place, GSEZ presents a highly attractive opportunity for both local and international investors to confidently establish and expand their operations in a well-powered and investment-friendly environment.`,
+    date: "2025-07-01",
+    image: "/news-files/2025/07-july/01/01-july-1.jpg",
+  },
+  {
+    title: "PMs Speech at the Parliament.",
+    details: `Ethiopia’s industrial sector is projected to expand by approximately 12 percent in 2024/25, demonstrating tangible progress under the “Ethiopia Tamirt” initiative. National production capacity, previously at 59 percent, has now risen to 65 percent, primarily due to increased factory utilization. Industrial energy demand has surged to 40 percent, reflecting accelerated industrial activity. Notable sectoral gains include an 18 percent increase in steel production and substantial expansion in cement output. Efforts to achieve self-sufficiency in glass manufacturing are also underway, with a state-of-the-art glass factory—designed to produce 600,000 tons annually—scheduled for completion by December or January. Additionally, solar panel manufacturing plants are under construction and set to be inaugurated soon, reinforcing the country’s commitment to revitalizing and modernizing its industrial base. Our Prime Minister Dr. Abiy Ahmed said, “For Ethiopia to become competent in the global economic arena, leveraging on manufacturing industry is crucial. In this regard, the establishment of Gada Special Economic Zone (GSEZ) is instrumental in unlocking Oromia’s and Ethiopia’s vast potential for manufacturing industry.” Hence, GSEZ stands out as a leading initiative driving the industrial transformation of our nation. Come and build your future in GSEZ!`,
+    date: "2025-07-02",
+    image: "/news-files/2025/07-july/02-1/02-july-2-part-1.jpg",
+  },
+  {
+    title: "Capacity-building training session on “Performance Evaluation” delivered to the staff of the GSEZ.",
+    details: `A capacity-building training session on “Performance Evaluation” is currently being delivered to the staff of the Gada Special Economic Zone by H.E. Kebede Geneti (PhD). In his opening address, CEO Mr. Motuma Temesgen emphasized the importance of active staff engagement, stating that employees should take part in making history in the realization of the mission of GSEZ. The training is set to continue tomorrow with additional topics.\n\nLeenjiin ijaarsa dandeettii hojjettoota Zoonii Diinagdee Addaa Gadaatiif Mata duree, “Performance Evaluation” jedhamu irratti kennamaa jira. Haasawa baninsaa irratti Hojii Gageessaa Ola’aanaan Zoonichaa, obbo Mootummaa Tamsageen akka jedhanitti, “ nuti hojjettoonni zoonichaa qaama seenaa hojjetu ta’uu qabna!” jedhaniiru. Leenjichi mata dureelee adda adda irratti guyyaa boruus kan itti fufu ta’a.`,
+    date: "2025-07-09",
+    image: "/news-files/2025/07-july/09/01-july-9.jpg",
+  },
+];
+
+function News() {
+  return (
+    <div className="news-list-container">
+      <h1 className="news-list-title">Latest News</h1>
+      <div className="news-list-grid">
+        {newsData.map((item, idx) => (
+          <NewsCard key={idx} {...item} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default News;

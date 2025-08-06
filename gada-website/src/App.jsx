@@ -56,6 +56,8 @@ export default function App() {
         return <MediaGallery />;
       case '#investments':
         return <Investments />;
+      case '#news':
+        return <News />;
       default:
         return (
           <>
