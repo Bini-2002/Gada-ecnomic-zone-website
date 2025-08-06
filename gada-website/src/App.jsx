@@ -15,6 +15,7 @@ import AnnualExecutive from './components/AnnualExecutive.jsx';
 import MediaGallery from './components/MediaGallery.jsx';
 import Investments from './components/Investments.jsx';
 import { ThemeContext } from './components/ThemeContext';
+import AdminDashboard from './components/AdminDashboard.jsx';
 
 
 export default function App() {
@@ -58,6 +59,8 @@ export default function App() {
         return <Investments />;
       case '#news':
         return <News />;
+      case '#admin-dashboard':
+        return <AdminDashboard />;
       default:
         return (
           <>

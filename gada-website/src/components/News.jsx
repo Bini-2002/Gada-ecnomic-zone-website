@@ -38,7 +38,7 @@ function NewsCard({ title, details, date, image }) {
   );
 }
 
-const newsData = [
+export const newsData = [
   {
     title: "GSEZ is building dedicated substation",
     details: `Gada Special Economic Zone (GSEZ) is equipped with its own dedicated substation, currently under construction by Ethiopian Electric Power (EEP), which is expected to generate 230 MW/h starting from July 2025. This strategic infrastructure ensures reliable and uninterrupted power supply exclusively for industries within the zone, thereby eliminating one of the major constraints often faced by investors in emerging markets. With this vital utility in place, GSEZ presents a highly attractive opportunity for both local and international investors to confidently establish and expand their operations in a well-powered and investment-friendly environment.`,
