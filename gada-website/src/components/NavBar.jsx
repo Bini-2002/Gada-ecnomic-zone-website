@@ -104,7 +104,16 @@ export default function NavBar() {
                 </div>
               </div>
               <a href="#news" className="nav-link-item" onClick={(e) => { e.preventDefault(); window.location.hash = '#news'; setIsDropdownOpen(false); }}>News & Events <i className="fi fi-rr-angle-small-right"></i></a>
-              <a href="#admin-dashboard" className="nav-link-item" style={{color:'#e53935', fontWeight:700}}>Admin Dashboard</a>
+              {/* Only show Admin Dashboard if logged in as admin */}
+              {localStorage.getItem('token') && (() => {
+                try {
+                  const payload = JSON.parse(atob(localStorage.getItem('token').split('.')[1]));
+                  if (payload.role === 'admin') {
+                    return <a href="#admin-dashboard" className="nav-link-item" style={{color:'#e53935', fontWeight:700}}>Admin Dashboard</a>;
+                  }
+                } catch {}
+                return null;
+              })()}
               <a href="#log-in" className="nav-link-item">Log in </a>
             </div>
           )}

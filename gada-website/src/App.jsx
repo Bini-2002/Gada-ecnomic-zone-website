@@ -16,11 +16,12 @@ import MediaGallery from './components/MediaGallery.jsx';
 import Investments from './components/Investments.jsx';
 import { ThemeContext } from './components/ThemeContext';
 import AdminDashboard from './components/AdminDashboard.jsx';
+import LoginRegisterPage from './components/LoginRegisterPage.jsx';
 
 
-export default function App() {
   const { isDarkMode } = useContext(ThemeContext);
   const [currentView, setCurrentView] = useState(window.location.hash);
+  const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
     document.body.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
@@ -36,6 +37,38 @@ export default function App() {
       window.removeEventListener('hashchange', handleHashChange);
     };
   }, []);
+
+  // Check token and set user role
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      // Decode JWT (simple base64, not secure, for demo)
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        setUserRole(payload.role);
+      } catch {
+        setUserRole(null);
+      }
+    } else {
+      setUserRole(null);
+    }
+  }, [currentView]);
+
+  const handleLogin = () => {
+    // After login, update role and go to admin dashboard if admin
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        setUserRole(payload.role);
+        if (payload.role === 'admin') {
+          window.location.hash = '#admin-dashboard';
+        } else {
+          window.location.hash = '#news';
+        }
+      } catch {}
+    }
+  };
 
   const renderContent = () => {
     switch (currentView) {
@@ -60,7 +93,15 @@ export default function App() {
       case '#news':
         return <News />;
       case '#admin-dashboard':
-        return <AdminDashboard />;
+        if (userRole === 'admin') {
+          return <AdminDashboard />;
+        } else {
+          // Not admin, redirect to news
+          window.location.hash = '#news';
+          return null;
+        }
+      case '#log-in':
+        return <LoginRegisterPage onLogin={handleLogin} />;
       default:
         return (
           <>
@@ -79,5 +120,4 @@ export default function App() {
       <Footer />
     </>
   ) 
-}
 

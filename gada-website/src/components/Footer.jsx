@@ -8,6 +8,8 @@ import PrimeMinisterOffice from '../office-image/PMO.jpg';
 import OromiaLogo from '../office-image/oromia-logo.png';
 import '../Footer.css';
 import logoImage from '../images/GSEZ-Horizontal-logo.png';
+import { useState } from 'react';
+import { registerUser } from '../api';
 
 const officeLogos = [
   { src: NationalBanklogo, alt: 'National Bank of Ethiopia' },
@@ -21,6 +23,32 @@ const officeLogos = [
 ];
 
 export default function Footer() {
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [message, setMessage] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setMessage("");
+    if (password !== confirmPassword) {
+      setMessage("Passwords do not match.");
+      return;
+    }
+    if (!username) {
+      setMessage("Username is required.");
+      return;
+    }
+    const res = await registerUser({ username, email, password, role: "user" });
+    if (res.id) {
+      setMessage("Registration successful! You can now log in.");
+      setUsername(""); setEmail(""); setPassword(""); setConfirmPassword("");
+    } else {
+      setMessage(res.detail || "Registration failed.");
+    }
+  };
+
   return (
     <footer className="footer">
       <h3 className="footer-title">Our Partners</h3>
@@ -47,15 +75,18 @@ export default function Footer() {
           <p><i className="fi fi-rr-marker"></i>Adama City, Melka Adama Sub-City, Abba Gada</p>
         </div>
 
-        <form action="" className="footer-form">
-            <label htmlFor="email">Email</label>
-            <input type="email" placeholder="Subscribe to our website" name='email' required /> <br />
-            <label htmlFor="password">Password</label>
-            <input type="password" placeholder="Enter your password" name='password' required /> <br />
-            <label htmlFor="confirm-password">Confirm Password</label>
-            <input type="password" placeholder="Confirm your password" name='confirm-password' required /> <br/>
-            <button type="submit">Subscribe</button>
-        </form>
+    <form className="footer-form" onSubmit={handleSubmit}>
+      <label htmlFor="username">Username</label>
+      <input type="text" placeholder="Enter your username" name='username' value={username} onChange={e => setUsername(e.target.value)} required /> <br />
+      <label htmlFor="email">Email</label>
+      <input type="email" placeholder="Subscribe to our website" name='email' value={email} onChange={e => setEmail(e.target.value)} required /> <br />
+      <label htmlFor="password">Password</label>
+      <input type="password" placeholder="Enter your password" name='password' value={password} onChange={e => setPassword(e.target.value)} required /> <br />
+      <label htmlFor="confirm-password">Confirm Password</label>
+      <input type="password" placeholder="Confirm your password" name='confirm-password' value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required /> <br/>
+      <button type="submit">Subscribe</button>
+      {message && <div style={{marginTop:8, color: message.includes('success') ? 'green' : 'red'}}>{message}</div>}
+    </form>
 
         <div className='visitor-stats'>
           <h4>Visitor Statistics</h4>

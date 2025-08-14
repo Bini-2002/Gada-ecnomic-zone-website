@@ -20,11 +20,13 @@ app.add_middleware(
 
 @app.post("/register", response_model=schemas.User)
 def register_user(user: schemas.UserCreate, db: Session = Depends(database.get_db)):
-    db_user = db.query(models.User).filter(models.User.username == user.username).first()
+    if not user.email:
+        raise HTTPException(status_code=400, detail="Email is required")
+    db_user = db.query(models.User).filter((models.User.username == user.username) | (models.User.email == user.email)).first()
     if db_user:
-        raise HTTPException(status_code=400, detail="Username already registered")
+        raise HTTPException(status_code=400, detail="Username or email already registered")
     hashed_password = auth.get_password_hash(user.password)
-    db_user = models.User(username=user.username, hashed_password=hashed_password, role=user.role)
+    db_user = models.User(username=user.username, email=user.email, hashed_password=hashed_password, role=user.role)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
