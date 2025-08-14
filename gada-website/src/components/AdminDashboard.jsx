@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { registerUser, loginUser } from "../api";
 import "../AdminDashboard.css";
 
 // Import newsData from News.jsx
@@ -18,6 +19,25 @@ export default function AdminDashboard() {
   const [imagePreview, setImagePreview] = useState("");
   const [localPosts, setLocalPosts] = useState([]);
 
+
+  // Example: Register an admin (for demo, replace with your own logic/UI)
+  const handleAdminRegister = async () => {
+    const res = await registerUser({ username: "admin", password: "adminpass", role: "admin" });
+    alert("Admin registered: " + JSON.stringify(res));
+  };
+
+  // Example: Login as admin (for demo, replace with your own logic/UI)
+  const handleAdminLogin = async () => {
+    const res = await loginUser({ username: "admin", password: "adminpass" });
+    if (res.access_token) {
+      localStorage.setItem("token", res.access_token);
+      alert("Logged in as admin!");
+    } else {
+      alert("Login failed: " + JSON.stringify(res));
+    }
+  };
+
+  // Approve registration (dummy, replace with backend call if needed)
   const approveRegistration = (id) => {
     setRegistrations((regs) =>
       regs.map((reg) =>
@@ -41,25 +61,38 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleCreatePost = (e) => {
+  // Create post as admin (calls backend, requires JWT)
+  const handleCreatePost = async (e) => {
     e.preventDefault();
     if (postTitle && postDate && postDetails && postImage) {
+      const token = localStorage.getItem("token");
       const newPost = {
         title: postTitle,
         date: postDate,
         details: postDetails,
         image: postImage,
       };
-      setLocalPosts([newPost, ...localPosts]);
-      if (Array.isArray(newsData)) {
-        newsData.unshift(newPost);
+      // Call backend (replace URL if needed)
+      const res = await fetch("http://localhost:8000/posts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(newPost),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setLocalPosts([data, ...localPosts]);
+        alert("Post created!");
+      } else {
+        alert("Failed to create post: " + JSON.stringify(data));
       }
       setPostTitle("");
       setPostDate("");
       setPostDetails("");
       setPostImage("");
       setImagePreview("");
-      // Optionally reset file input
       if (document.getElementById('news-image-input')) {
         document.getElementById('news-image-input').value = "";
       }
@@ -69,6 +102,10 @@ export default function AdminDashboard() {
   return (
     <div className="admin-dashboard">
       <h1 className="admin-title">Admin Dashboard</h1>
+      <div style={{marginBottom:16}}>
+        <button onClick={handleAdminRegister}>Register Admin (demo)</button>
+        <button onClick={handleAdminLogin} style={{marginLeft:8}}>Login as Admin (demo)</button>
+      </div>
       <div className="admin-section">
         <h2>Approve Registrations</h2>
         <table className="admin-table">
