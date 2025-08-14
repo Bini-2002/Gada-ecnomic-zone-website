@@ -1,10 +1,11 @@
-import './index.css'
+
+import './index.css';
 import { useContext, useEffect, useState } from 'react';
 import NavBar from './components/NavBar.jsx';
 import MainContent from './components/MainContent.jsx';
 import Description from './components/Description.jsx';
 import News from './components/News.jsx';
-import Footer from './components/Footer.jsx'; 
+import Footer from './components/Footer.jsx';
 import Standard from './components/Standard.jsx';
 import Inverstor from './components/Inverstor.jsx';
 import ValueProposition from './components/ValueProposition.jsx';
@@ -18,7 +19,7 @@ import { ThemeContext } from './components/ThemeContext';
 import AdminDashboard from './components/AdminDashboard.jsx';
 import LoginRegisterPage from './components/LoginRegisterPage.jsx';
 
-
+function App() {
   const { isDarkMode } = useContext(ThemeContext);
   const [currentView, setCurrentView] = useState(window.location.hash);
   const [userRole, setUserRole] = useState(null);
@@ -119,5 +120,7 @@ import LoginRegisterPage from './components/LoginRegisterPage.jsx';
       {renderContent()}
       <Footer />
     </>
-  ) 
+  );
+}
 
+export default App;

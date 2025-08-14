@@ -1,3 +1,23 @@
+
+
+# --- Place this after app = FastAPI() and all imports ---
+from typing import List
+
+@app.post("/posts", response_model=schemas.Post)
+def create_post(post: schemas.PostCreate, db: Session = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_user)):
+    # Optionally, restrict to admin only:
+    # if current_user.role != "admin":
+    #     raise HTTPException(status_code=403, detail="Not authorized")
+    db_post = models.Post(
+        title=post.title,
+        date=post.date,
+        details=post.details,
+        image=post.image
+    )
+    db.add(db_post)
+    db.commit()
+    db.refresh(db_post)
+    return db_post
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { loginUser, registerUser } from "../api";
+import "../LoginRegisterPage.css";
 
 export default function LoginRegisterPage({ onLogin }) {
   const [isLogin, setIsLogin] = useState(true);
@@ -43,8 +44,8 @@ export default function LoginRegisterPage({ onLogin }) {
   };
 
   return (
-    <div style={{maxWidth:400,margin:"40px auto",padding:24,background:"#fff",borderRadius:8,boxShadow:"0 2px 8px #0001"}}>
-      <h2 style={{textAlign:"center"}}>{isLogin ? "Log In" : "Register"}</h2>
+    <div className="login-register-container">
+      <h2>{isLogin ? "Log In" : "Register"}</h2>
       <form onSubmit={isLogin ? handleLogin : handleRegister}>
         <label>Username</label>
         <input type="text" value={username} onChange={e=>setUsername(e.target.value)} required />
@@ -58,14 +59,14 @@ export default function LoginRegisterPage({ onLogin }) {
           <label>Confirm Password</label>
           <input type="password" value={confirmPassword} onChange={e=>setConfirmPassword(e.target.value)} required />
         </>}
-        <button type="submit" style={{marginTop:12,width:"100%"}}>{isLogin ? "Log In" : "Register"}</button>
-        {message && <div style={{marginTop:8, color: message.includes('success') ? 'green' : 'red'}}>{message}</div>}
+        <button type="submit">{isLogin ? "Log In" : "Register"}</button>
+        {message && <div className={`message${message.includes('success') ? ' success' : ' error'}`}>{message}</div>}
       </form>
       <div style={{marginTop:16,textAlign:"center"}}>
         {isLogin ? (
-          <span>Don't have an account? <button onClick={()=>setIsLogin(false)} style={{color:"#1976d2",background:"none",border:0,cursor:"pointer"}}>Register</button></span>
+          <span>Don't have an account? <button className="switch-link" onClick={()=>setIsLogin(false)}>Register</button></span>
         ) : (
-          <span>Already have an account? <button onClick={()=>setIsLogin(true)} style={{color:"#1976d2",background:"none",border:0,cursor:"pointer"}}>Log In</button></span>
+          <span>Already have an account? <button className="switch-link" onClick={()=>setIsLogin(true)}>Log In</button></span>
         )}
       </div>
     </div>

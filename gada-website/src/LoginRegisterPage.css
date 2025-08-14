@@ -1,0 +1,76 @@
+.login-register-container {
+  max-width: 400px;
+  margin: 40px auto;
+  padding: 32px 24px 24px 24px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px #0002;
+  border: 2px solid #e53935;
+}
+.login-register-container h2 {
+  color: #e53935;
+  text-align: center;
+  margin-bottom: 24px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.login-register-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.login-register-container label {
+  color: #111;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.login-register-container input {
+  padding: 8px 10px;
+  border: 1.5px solid #e53935;
+  border-radius: 6px;
+  font-size: 1rem;
+  outline: none;
+  background: #fff;
+  color: #111;
+  transition: border 0.2s;
+}
+.login-register-container input:focus {
+  border: 2px solid #111;
+}
+.login-register-container button[type="submit"] {
+  background: #e53935;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-top: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.login-register-container button[type="submit"]:hover {
+  background: #b71c1c;
+}
+.login-register-container .switch-link {
+  color: #e53935;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  margin-left: 4px;
+}
+.login-register-container .switch-link:hover {
+  text-decoration: underline;
+}
+.login-register-container .message {
+  margin-top: 10px;
+  text-align: center;
+  font-weight: 600;
+}
+.login-register-container .message.success {
+  color: #388e3c;
+}
+.login-register-container .message.error {
+  color: #e53935;
+}
