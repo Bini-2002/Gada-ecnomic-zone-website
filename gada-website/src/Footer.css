@@ -28,6 +28,7 @@
 .company-logo-slider {
   width: 100%;
   overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, transparent, white 10%, white 90%, transparent);
   mask-image: linear-gradient(to right, transparent, white 10%, white 90%, transparent);
 }
 

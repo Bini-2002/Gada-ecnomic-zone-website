@@ -15,6 +15,7 @@ export default function AdminDashboard() {
   const [postDate, setPostDate] = useState("");
   const [postDetails, setPostDetails] = useState("");
   const [postImage, setPostImage] = useState("");
+  const [imagePreview, setImagePreview] = useState("");
   const [localPosts, setLocalPosts] = useState([]);
 
   const approveRegistration = (id) => {
@@ -23,6 +24,21 @@ export default function AdminDashboard() {
         reg.id === id ? { ...reg, status: "approved" } : reg
       )
     );
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPostImage(reader.result);
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setPostImage("");
+      setImagePreview("");
+    }
   };
 
   const handleCreatePost = (e) => {
@@ -34,9 +50,7 @@ export default function AdminDashboard() {
         details: postDetails,
         image: postImage,
       };
-      // Add to local state for immediate feedback
       setLocalPosts([newPost, ...localPosts]);
-      // Add to newsData (for demo, this works if newsData is exported and mutable)
       if (Array.isArray(newsData)) {
         newsData.unshift(newPost);
       }
@@ -44,6 +58,11 @@ export default function AdminDashboard() {
       setPostDate("");
       setPostDetails("");
       setPostImage("");
+      setImagePreview("");
+      // Optionally reset file input
+      if (document.getElementById('news-image-input')) {
+        document.getElementById('news-image-input').value = "";
+      }
     }
   };
 
@@ -108,13 +127,16 @@ export default function AdminDashboard() {
             required
           />
           <input
-            type="text"
-            placeholder="Image URL (e.g. /news-files/2025/07-july/01/01-july-1.jpg)"
-            value={postImage}
-            onChange={(e) => setPostImage(e.target.value)}
+            id="news-image-input"
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
             className="post-input"
             required
           />
+          {imagePreview && (
+            <img src={imagePreview} alt="Preview" style={{maxWidth:'180px',marginTop:'0.5rem',borderRadius:'0.5rem',border:'2px solid #e53935'}} />
+          )}
           <button type="submit" className="create-post-btn">Create Post</button>
         </form>
         <div className="posts-list">
