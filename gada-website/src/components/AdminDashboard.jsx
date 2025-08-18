@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { createPost, getPosts, updatePost, listUsers, updateUserRole, deleteUser, uploadImage } from "../api";
+import { createPost, getPosts, updatePost, listUsers, updateUserRole, deleteUser, uploadImage, approveUser, changePassword } from "../api";
 import "../AdminDashboard.css";
 
 // Import newsData from News.jsx
@@ -33,6 +33,9 @@ export default function AdminDashboard() {
   const [editDetails, setEditDetails] = useState("");
   const [editImage, setEditImage] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
+  const [passwordOld, setPasswordOld] = useState("");
+  const [passwordNew, setPasswordNew] = useState("");
+  const [passwordMsg, setPasswordMsg] = useState("");
   const token = localStorage.getItem('token');
 
   useEffect(() => {
@@ -53,9 +56,9 @@ export default function AdminDashboard() {
       try {
         const data = await listUsers({ skip: 0, limit: 25, search: userSearch }, token);
         if (!active) return;
-        setUsers(data);
-        setUserSkip(data.length);
-        setUserHasMore(data.length === 25);
+        setUsers(data.items);
+        setUserSkip(data.items.length);
+        setUserHasMore(data.items.length === 25);
       } catch (e) { if (active) setUsersError(e.message); }
       finally { if (active) setUsersLoading(false); }
     })();
@@ -118,15 +121,21 @@ export default function AdminDashboard() {
     if (!userHasMore) return;
     try {
       const batch = await listUsers({ skip: userSkip, limit: 25, search: userSearch }, token);
-      setUsers(u => [...u, ...batch]);
-      setUserSkip(s => s + batch.length);
-      setUserHasMore(batch.length === 25);
+      setUsers(u => [...u, ...batch.items]);
+      setUserSkip(s => s + batch.items.length);
+      setUserHasMore(batch.items.length === 25);
     } catch (e) { alert(e.message); }
   };
 
   const handleRoleChange = async (userId, newRole) => {
     try {
       const updated = await updateUserRole(userId, newRole, token);
+      setUsers(u => u.map(us => us.id === userId ? updated : us));
+    } catch (e) { alert(e.message); }
+  };
+  const handleApproveChange = async (userId, approved) => {
+    try {
+      const updated = await approveUser(userId, approved, token);
       setUsers(u => u.map(us => us.id === userId ? updated : us));
     } catch (e) { alert(e.message); }
   };
@@ -290,6 +299,7 @@ export default function AdminDashboard() {
                 <th>Username</th>
                 <th>Email</th>
                 <th>Role</th>
+                <th>Approved</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -310,6 +320,9 @@ export default function AdminDashboard() {
                     </select>
                   </td>
                   <td>
+                    <input type="checkbox" checked={!!u.approved} onChange={e => handleApproveChange(u.id, e.target.checked)} />
+                  </td>
+                  <td>
                     <button
                       type="button"
                       onClick={() => handleDeleteUser(u.id)}
@@ -325,6 +338,15 @@ export default function AdminDashboard() {
         {userHasMore && !usersLoading && (
           <button className="approve-btn" type="button" onClick={loadMoreUsers}>Load More</button>
         )}
+      </div>
+      <div className="admin-section">
+        <h2>Change My Password</h2>
+        <form onSubmit={async e => { e.preventDefault(); setPasswordMsg(''); try { const res = await changePassword(passwordOld, passwordNew, token); setPasswordMsg(res.detail); setPasswordOld(''); setPasswordNew(''); } catch (err) { setPasswordMsg(err.message); } }} className="post-form" style={{marginBottom:'0.5rem'}}>
+          <input type="password" placeholder="Old Password" value={passwordOld} onChange={e=>setPasswordOld(e.target.value)} className="post-input" required />
+          <input type="password" placeholder="New Password" value={passwordNew} onChange={e=>setPasswordNew(e.target.value)} className="post-input" required />
+          <button type="submit" className="create-post-btn">Update Password</button>
+        </form>
+        {passwordMsg && <div style={{fontWeight:600}}>{passwordMsg}</div>}
       </div>
 
       {/* Edit Post Modal */}

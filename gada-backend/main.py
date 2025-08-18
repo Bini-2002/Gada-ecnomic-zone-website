@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File
+from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File, Body
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
@@ -33,7 +33,7 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(database.get_d
     if db_user:
         raise HTTPException(status_code=400, detail="Username or email already registered")
     hashed_password = auth.get_password_hash(user.password)
-    db_user = models.User(username=user.username, email=user.email, hashed_password=hashed_password, role=user.role)
+    db_user = models.User(username=user.username, email=user.email, hashed_password=hashed_password, role=user.role, approved=False)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
@@ -78,6 +78,9 @@ def create_post(
     db.refresh(db_post)
     return db_post
 
+ALLOWED_EXTS = {'.png', '.jpg', '.jpeg', '.gif', '.webp'}
+MAX_IMAGE_BYTES = 4 * 1024 * 1024  # 4MB
+
 @app.post('/upload-image')
 def upload_image(
     file: UploadFile = File(...),
@@ -87,14 +90,26 @@ def upload_image(
     if not file.content_type.startswith('image/'):
         raise HTTPException(status_code=400, detail='Only image uploads allowed')
     ext = os.path.splitext(file.filename)[1].lower() or '.img'
+    if ext not in ALLOWED_EXTS:
+        raise HTTPException(status_code=400, detail='Extension not allowed')
+    # Read first bytes to enforce size (stream copy with limit)
+    size = 0
     filename = f"{uuid.uuid4().hex}{ext}"
     dest_path = os.path.join(UPLOAD_DIR, filename)
     with open(dest_path, 'wb') as out_file:
-        shutil.copyfileobj(file.file, out_file)
+        chunk = file.file.read(1024 * 1024)
+        while chunk:
+            size += len(chunk)
+            if size > MAX_IMAGE_BYTES:
+                out_file.close()
+                os.remove(dest_path)
+                raise HTTPException(status_code=400, detail='File too large (max 4MB)')
+            out_file.write(chunk)
+            chunk = file.file.read(1024 * 1024)
     # Return relative URL path
     return { 'filename': filename, 'url': f"/uploads/{filename}" }
 
-@app.get("/posts", response_model=list[schemas.Post])
+@app.get("/posts", response_model=schemas.PostList)
 def read_posts(
     db: Session = Depends(database.get_db),
     skip: int = 0,
@@ -105,10 +120,11 @@ def read_posts(
     if search:
         like = f"%{search}%"
         query = query.filter(models.Post.title.ilike(like) | models.Post.details.ilike(like))
+    total = query.count()
     posts = query.order_by(models.Post.id.desc()).offset(skip).limit(min(limit, 100)).all()
-    return posts
+    return {"total": total, "items": posts}
 
-@app.get("/users", response_model=list[schemas.User])
+@app.get("/users", response_model=schemas.UserList)
 def read_users(
     db: Session = Depends(database.get_db),
     current_admin: models.User = Depends(auth.get_current_admin),
@@ -120,7 +136,9 @@ def read_users(
     if search:
         like = f"%{search}%"
         query = query.filter(models.User.username.ilike(like) | models.User.email.ilike(like))
-    return query.order_by(models.User.id.desc()).offset(skip).limit(min(limit, 100)).all()
+    total = query.count()
+    users = query.order_by(models.User.id.desc()).offset(skip).limit(min(limit, 100)).all()
+    return {"total": total, "items": users}
 
 @app.put("/users/{user_id}/role", response_model=schemas.User)
 def update_user_role(
@@ -149,6 +167,33 @@ def delete_user(
     db.delete(user)
     db.commit()
     return {"detail": "User deleted"}
+
+@app.patch("/users/{user_id}/approve", response_model=schemas.User)
+def approve_user(
+    user_id: int,
+    body: schemas.UserApprove,
+    db: Session = Depends(database.get_db),
+    current_admin: models.User = Depends(auth.get_current_admin)
+):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    user.approved = body.approved
+    db.commit()
+    db.refresh(user)
+    return user
+
+@app.post('/users/password-change')
+def change_password(
+    payload: schemas.PasswordChange,
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    if not auth.verify_password(payload.old_password, current_user.hashed_password):
+        raise HTTPException(status_code=400, detail='Old password incorrect')
+    current_user.hashed_password = auth.get_password_hash(payload.new_password)
+    db.commit()
+    return {"detail": "Password updated"}
 
 @app.get("/posts/{post_id}", response_model=schemas.Post)
 def get_post(post_id: int, db: Session = Depends(database.get_db)):
@@ -184,6 +229,15 @@ def delete_post(
     post = db.query(models.Post).filter(models.Post.id == post_id).first()
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
+    # Attempt to delete image file if local and in uploads
+    if post.image and post.image.startswith('/uploads/'):
+        fname = post.image.split('/uploads/')[-1]
+        fpath = os.path.join(UPLOAD_DIR, fname)
+        if os.path.isfile(fpath):
+            try:
+                os.remove(fpath)
+            except OSError:
+                pass
     db.delete(post)
     db.commit()
     return {"detail": "Post deleted"}

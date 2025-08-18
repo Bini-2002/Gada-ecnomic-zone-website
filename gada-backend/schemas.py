@@ -12,6 +12,9 @@ class User(BaseModel):
     username: str
     email: str
     role: str
+    approved: bool | None = None
+    created_at: str | None = None
+    updated_at: str | None = None
 
     model_config = {"from_attributes": True}
 
@@ -31,4 +34,19 @@ class Post(BaseModel):
     created_at: str
 
     model_config = {"from_attributes": True}
+
+class PostList(BaseModel):
+    total: int
+    items: list[Post]
+
+class UserList(BaseModel):
+    total: int
+    items: list[User]
+
+class PasswordChange(BaseModel):
+    old_password: str
+    new_password: str
+
+class UserApprove(BaseModel):
+    approved: bool
 

@@ -74,14 +74,15 @@ function News() {
     try {
       setLoading(true);
       const data = await getPosts({ skip: reset ? 0 : skip, limit: PAGE_SIZE, search: search || undefined });
+      const items = data.items || [];
       if (reset) {
-        setPosts(data);
-        setSkip(data.length);
+        setPosts(items);
+        setSkip(items.length);
       } else {
-        setPosts(p => [...p, ...data]);
-        setSkip(s => s + data.length);
+        setPosts(p => [...p, ...items]);
+        setSkip(s => s + items.length);
       }
-      setHasMore(data.length === PAGE_SIZE);
+      setHasMore(items.length === PAGE_SIZE);
     } catch (e) {
       setError(e.message || 'Failed to load posts');
       if (reset) setPosts(fallbackNews);

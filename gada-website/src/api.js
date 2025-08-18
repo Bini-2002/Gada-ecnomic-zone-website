@@ -25,7 +25,7 @@ export async function getPosts({ skip = 0, limit = 50, search } = {}) {
   if (search) params.append('search', search);
   const res = await fetch('http://localhost:8000/posts' + (params.toString() ? `?${params}` : ''));
   if (!res.ok) throw new Error('Failed to load posts');
-  return res.json();
+  return res.json(); // { total, items }
 }
 
 export async function createPost(post, token) {
@@ -66,7 +66,7 @@ export async function listUsers({ skip = 0, limit = 50, search } = {}, token) {
   if (search) params.append('search', search);
   const res = await fetch('http://localhost:8000/users' + (params.toString() ? `?${params}` : ''), { headers: { Authorization: `Bearer ${token}` } });
   if (!res.ok) throw new Error('Failed to load users');
-  return res.json();
+  return res.json(); // { total, items }
 }
 
 export async function updateUserRole(userId, role, token) {
@@ -93,4 +93,26 @@ export async function uploadImage(file, token) {
   const data = await res.json();
   if (!res.ok) throw new Error(data.detail || 'Failed to upload image');
   return data; // { filename, url }
+}
+
+export async function approveUser(userId, approved, token) {
+  const res = await fetch(`http://localhost:8000/users/${userId}/approve`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ approved })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || 'Failed to update approval');
+  return data;
+}
+
+export async function changePassword(old_password, new_password, token) {
+  const res = await fetch('http://localhost:8000/users/password-change', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ old_password, new_password })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || 'Failed to change password');
+  return data;
 }
