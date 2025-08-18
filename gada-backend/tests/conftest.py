@@ -1,6 +1,7 @@
 import os, tempfile, pytest
 # Ensure SECRET_KEY set before importing application modules
 os.environ.setdefault('SECRET_KEY', 'test_secret_key')
+os.environ.setdefault('DISABLE_SCHEDULER', '1')
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker

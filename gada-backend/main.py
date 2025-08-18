@@ -409,6 +409,8 @@ def _cleanup_refresh_tokens_job():
 @app.on_event("startup")
 def _start_scheduler():
     global _scheduler
+    if os.getenv('DISABLE_SCHEDULER') == '1':
+        return
     if _scheduler is None:
         _scheduler = BackgroundScheduler()
         _scheduler.start()
@@ -418,6 +420,8 @@ def _start_scheduler():
 @app.on_event("shutdown")
 def _stop_scheduler():
     global _scheduler
+    if os.getenv('DISABLE_SCHEDULER') == '1':
+        return
     if _scheduler:
         _scheduler.shutdown(wait=False)
         _scheduler = None
