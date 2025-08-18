@@ -1,7 +1,7 @@
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
-import secrets, hashlib
+import secrets, hashlib, re
 from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
@@ -43,6 +43,23 @@ def hash_refresh_token(raw: str) -> str:
 
 def verify_refresh_token(raw: str, stored_hash: str) -> bool:
     return hash_refresh_token(raw) == stored_hash
+
+PASSWORD_MIN_LENGTH = 8
+_PASSWORD_REGEXES = [
+    (re.compile(r"[a-z]"), "lowercase letter"),
+    (re.compile(r"[A-Z]"), "uppercase letter"),
+    (re.compile(r"\d"), "digit"),
+    (re.compile(r"[^A-Za-z0-9]"), "symbol")
+]
+
+def password_strength_errors(pw: str) -> list[str]:
+    errors = []
+    if len(pw) < PASSWORD_MIN_LENGTH:
+        errors.append(f"at least {PASSWORD_MIN_LENGTH} characters")
+    for regex, desc in _PASSWORD_REGEXES:
+        if not regex.search(pw):
+            errors.append(f"at least one {desc}")
+    return errors
 
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(database.get_db)):
     credentials_exception = HTTPException(

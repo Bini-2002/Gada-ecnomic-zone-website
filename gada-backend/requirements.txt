@@ -7,3 +7,5 @@ sqlalchemy
 alembic
 python-dotenv
 APScheduler
+pytest
+httpx

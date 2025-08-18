@@ -30,12 +30,13 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 app.mount('/uploads', StaticFiles(directory=UPLOAD_DIR), name='uploads')
 
 # CORS Middleware
+FRONTEND_ORIGINS = os.getenv("FRONTEND_ORIGINS", "http://localhost:5173").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Adjust this to your frontend's origin
+    allow_origins=FRONTEND_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET","POST","PUT","PATCH","DELETE"],
+    allow_headers=["Authorization","Content-Type"],
 )
 
 @app.post("/register", response_model=schemas.User)
@@ -45,6 +46,9 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(database.get_d
     db_user = db.query(models.User).filter((models.User.username == user.username) | (models.User.email == user.email)).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Username or email already registered")
+    pw_errors = auth.password_strength_errors(user.password)
+    if pw_errors:
+        raise HTTPException(status_code=400, detail=f"Weak password, need: {', '.join(pw_errors)}")
     hashed_password = auth.get_password_hash(user.password)
     db_user = models.User(username=user.username, email=user.email, hashed_password=hashed_password, role=user.role, approved=False)
     db.add(db_user)
@@ -225,6 +229,9 @@ def password_reset_perform(payload: schemas.PasswordResetPerform, db: Session = 
         raise HTTPException(status_code=400, detail='Invalid token')
     if not user.password_reset_sent_at or user.password_reset_sent_at + timedelta(hours=PASSWORD_RESET_TOKEN_EXPIRE_HOURS) < datetime.utcnow():
         raise HTTPException(status_code=400, detail='Password reset token expired, request a new one')
+    pw_errors = auth.password_strength_errors(payload.new_password)
+    if pw_errors:
+        raise HTTPException(status_code=400, detail=f"Weak password, need: {', '.join(pw_errors)}")
     user.hashed_password = auth.get_password_hash(payload.new_password)
     user.password_reset_token = None
     user.password_reset_sent_at = None
@@ -482,6 +489,9 @@ def change_password(
 ):
     if not auth.verify_password(payload.old_password, current_user.hashed_password):
         raise HTTPException(status_code=400, detail='Old password incorrect')
+    pw_errors = auth.password_strength_errors(payload.new_password)
+    if pw_errors:
+        raise HTTPException(status_code=400, detail=f"Weak password, need: {', '.join(pw_errors)}")
     current_user.hashed_password = auth.get_password_hash(payload.new_password)
     db.commit()
     return {"detail": "Password updated"}
