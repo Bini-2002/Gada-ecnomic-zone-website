@@ -15,6 +15,7 @@ class User(BaseModel):
     approved: bool | None = None
     created_at: str | None = None
     updated_at: str | None = None
+    email_verified: bool | None = None
 
     model_config = {"from_attributes": True}
 
@@ -65,4 +66,22 @@ class PasswordChange(BaseModel):
 
 class UserApprove(BaseModel):
     approved: bool
+
+class TokenPair(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+
+class RefreshRequest(BaseModel):
+    refresh_token: str
+
+class EmailVerificationRequest(BaseModel):
+    token: str
+
+class PasswordResetRequest(BaseModel):
+    email: str
+
+class PasswordResetPerform(BaseModel):
+    token: str
+    new_password: str
 

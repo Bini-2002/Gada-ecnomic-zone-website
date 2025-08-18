@@ -315,6 +315,14 @@ export default function AdminDashboard() {
             <div className="post-card" key={post.id}>
               <h3>{post.title}</h3>
               <div className="post-date">{post.date} <span style={{fontSize:'0.75rem', padding:'0.15rem 0.4rem', borderRadius:'0.4rem', background:'#eee', marginLeft:'0.5rem'}}>{post.status}</span></div>
+              <div style={{marginTop:'0.25rem'}}>
+                <label style={{fontSize:'0.7rem', marginRight:'0.3rem'}}>Change status:</label>
+                <select value={post.status} onChange={async e=>{ const newStatus = e.target.value; try { const updated = await updatePost(post.id, { title: post.title, date: post.date, details: post.details, image: post.image, status: newStatus, publish_at: post.publish_at || null }, token); setLocalPosts(p=>p.map(x=>x.id===post.id?updated:x)); } catch(err){ alert(err.message);} }} style={{fontSize:'0.7rem'}}>
+                  <option value="draft">draft</option>
+                  <option value="scheduled">scheduled</option>
+                  <option value="published">published</option>
+                </select>
+              </div>
               <p>{post.details}</p>
               {post.image && <img src={post.image} alt={post.title} style={{maxWidth:'100%',marginTop:'0.5rem',borderRadius:'0.5rem'}} />}
               <div style={{marginTop:'0.5rem',display:'flex',gap:'0.5rem'}}>

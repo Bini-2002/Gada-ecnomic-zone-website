@@ -3,8 +3,12 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-import os, uuid, shutil
+import os, uuid, shutil, secrets, time
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.interval import IntervalTrigger
+import logging
 
 # Load environment variables from .env if present
 load_dotenv()
@@ -16,6 +20,9 @@ if os.getenv("AUTO_CREATE", "1") == "1":
     models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI()
+
+logger = logging.getLogger("gada")
+logging.basicConfig(level=logging.INFO)
 
 # Ensure uploads directory exists and mount static
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), 'uploads')
@@ -45,8 +52,24 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(database.get_d
     db.refresh(db_user)
     return db_user
 
-@app.post("/token")
+_RATE_LIMIT: dict[str, list[float]] = {}
+RATE_LIMIT_WINDOW = 60.0
+RATE_LIMIT_MAX = 10  # per username per window for login attempts
+
+def _rate_limit_check(key: str):
+    now = time.time()
+    window_start = now - RATE_LIMIT_WINDOW
+    bucket = _RATE_LIMIT.setdefault(key, [])
+    # drop old
+    while bucket and bucket[0] < window_start:
+        bucket.pop(0)
+    if len(bucket) >= RATE_LIMIT_MAX:
+        raise HTTPException(status_code=429, detail="Too many attempts, try later")
+    bucket.append(now)
+
+@app.post("/token", response_model=schemas.TokenPair)
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(database.get_db)):
+    _rate_limit_check(f"login:{form_data.username}")
     user = db.query(models.User).filter(models.User.username == form_data.username).first()
     if not user or not auth.verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
@@ -55,13 +78,75 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
             headers={"WWW-Authenticate": "Bearer"},
         )
     if not user.approved:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Account not yet approved",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        raise HTTPException(status_code=403, detail="Account not yet approved")
+    if not user.email_verified:
+        # issue refresh but mark need verification? Simpler: block until verified
+        pass
     access_token = auth.create_access_token(data={"sub": user.username, "role": user.role})
-    return {"access_token": access_token, "token_type": "bearer"}
+    refresh_raw = auth.generate_refresh_token()
+    rt = models.RefreshToken(user_id=user.id, token=refresh_raw, expires_at=datetime.utcnow() + timedelta(days=auth.REFRESH_TOKEN_EXPIRE_DAYS))
+    db.add(rt)
+    db.commit()
+    return {"access_token": access_token, "refresh_token": refresh_raw, "token_type": "bearer"}
+
+@app.post('/token/refresh', response_model=schemas.TokenPair)
+def refresh_token(payload: schemas.RefreshRequest, db: Session = Depends(database.get_db)):
+    token_row = db.query(models.RefreshToken).filter(models.RefreshToken.token == payload.refresh_token, models.RefreshToken.revoked == False).first()
+    if not token_row or token_row.expires_at < datetime.utcnow():
+        raise HTTPException(status_code=401, detail='Invalid refresh token')
+    user = db.query(models.User).filter(models.User.id == token_row.user_id).first()
+    if not user:
+        raise HTTPException(status_code=401, detail='Invalid refresh token')
+    access_token = auth.create_access_token(data={"sub": user.username, "role": user.role})
+    # rotate refresh
+    token_row.revoked = True
+    new_refresh = auth.generate_refresh_token()
+    db.add(models.RefreshToken(user_id=user.id, token=new_refresh, expires_at=datetime.utcnow() + timedelta(days=auth.REFRESH_TOKEN_EXPIRE_DAYS)))
+    db.commit()
+    return {"access_token": access_token, "refresh_token": new_refresh, "token_type": "bearer"}
+
+@app.post('/email/send-verification')
+def send_email_verification(current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(database.get_db)):
+    if current_user.email_verified:
+        return {"detail": "Already verified"}
+    current_user.email_verification_token = secrets.token_urlsafe(32)
+    current_user.email_verification_sent_at = datetime.utcnow()
+    db.commit()
+    # Placeholder: In production, send email containing the token
+    return {"detail": "Verification email generated", "token": current_user.email_verification_token}
+
+@app.post('/email/verify')
+def verify_email(payload: schemas.EmailVerificationRequest, current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(database.get_db)):
+    if current_user.email_verified:
+        return {"detail": "Already verified"}
+    if payload.token != current_user.email_verification_token:
+        raise HTTPException(status_code=400, detail='Invalid token')
+    current_user.email_verified = True
+    current_user.email_verification_token = None
+    db.commit()
+    return {"detail": "Email verified"}
+
+@app.post('/password/reset-request')
+def password_reset_request(payload: schemas.PasswordResetRequest, db: Session = Depends(database.get_db)):
+    user = db.query(models.User).filter(models.User.email == payload.email).first()
+    if not user:
+        # Do not reveal existence
+        return {"detail": "If that email exists, a reset was created"}
+    user.password_reset_token = secrets.token_urlsafe(48)
+    user.password_reset_sent_at = datetime.utcnow()
+    db.commit()
+    return {"detail": "Reset token generated", "token": user.password_reset_token}
+
+@app.post('/password/reset-perform')
+def password_reset_perform(payload: schemas.PasswordResetPerform, db: Session = Depends(database.get_db)):
+    user = db.query(models.User).filter(models.User.password_reset_token == payload.token).first()
+    if not user:
+        raise HTTPException(status_code=400, detail='Invalid token')
+    # Optional: expiry check
+    user.hashed_password = auth.get_password_hash(payload.new_password)
+    user.password_reset_token = None
+    db.commit()
+    return {"detail": "Password reset successful"}
 
 @app.get("/users/me", response_model=schemas.User)
 def read_users_me(current_user: models.User = Depends(auth.get_current_user)):
@@ -70,6 +155,10 @@ def read_users_me(current_user: models.User = Depends(auth.get_current_user)):
 @app.get("/")
 def read_root():
     return {"message": "Gada Backend API is running!"}
+
+@app.get('/health')
+def health():
+    return {"status": "ok"}
 
 
 # --- POST endpoint for admin to create posts ---
@@ -192,6 +281,40 @@ def backfill_post_status(db: Session = Depends(database.get_db), current_admin: 
         count += 1
     db.commit()
     return {"updated": count}
+
+# --- Scheduler for auto-publishing scheduled posts ---
+_scheduler: BackgroundScheduler | None = None
+
+def _auto_publish_job():
+    from datetime import datetime
+    db = next(database.get_db())
+    try:
+        now = datetime.utcnow()
+        q = db.query(models.Post).filter(models.Post.status == 'scheduled', models.Post.publish_at != None, models.Post.publish_at <= now)
+        changed = 0
+        for post in q.all():
+            post.status = 'published'
+            changed += 1
+        if changed:
+            db.commit()
+            logger.info("Auto-published %d scheduled posts", changed)
+    finally:
+        db.close()
+
+@app.on_event("startup")
+def _start_scheduler():
+    global _scheduler
+    if _scheduler is None:
+        _scheduler = BackgroundScheduler()
+        _scheduler.start()
+        _scheduler.add_job(_auto_publish_job, IntervalTrigger(minutes=1), id='auto_publish', replace_existing=True)
+
+@app.on_event("shutdown")
+def _stop_scheduler():
+    global _scheduler
+    if _scheduler:
+        _scheduler.shutdown(wait=False)
+        _scheduler = None
 
 @app.get("/users", response_model=schemas.UserList)
 def read_users(

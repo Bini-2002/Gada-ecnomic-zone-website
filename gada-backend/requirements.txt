@@ -6,3 +6,4 @@ pydantic
 sqlalchemy
 alembic
 python-dotenv
+APScheduler
