@@ -1,23 +1,3 @@
-
-
-# --- Place this after app = FastAPI() and all imports ---
-from typing import List
-
-@app.post("/posts", response_model=schemas.Post)
-def create_post(post: schemas.PostCreate, db: Session = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_user)):
-    # Optionally, restrict to admin only:
-    # if current_user.role != "admin":
-    #     raise HTTPException(status_code=403, detail="Not authorized")
-    db_post = models.Post(
-        title=post.title,
-        date=post.date,
-        details=post.details,
-        image=post.image
-    )
-    db.add(db_post)
-    db.commit()
-    db.refresh(db_post)
-    return db_post
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -71,3 +51,71 @@ def read_users_me(current_user: models.User = Depends(auth.get_current_user)):
 @app.get("/")
 def read_root():
     return {"message": "Gada Backend API is running!"}
+
+
+# --- POST endpoint for admin to create posts ---
+@app.post("/posts", response_model=schemas.Post)
+def create_post(
+    post: schemas.PostCreate,
+    db: Session = Depends(database.get_db),
+    current_admin: models.User = Depends(auth.get_current_admin)
+):
+    db_post = models.Post(
+        title=post.title,
+        date=post.date,
+        details=post.details,
+        image=post.image
+    )
+    db.add(db_post)
+    db.commit()
+    db.refresh(db_post)
+    return db_post
+
+@app.get("/posts", response_model=list[schemas.Post])
+def read_posts(db: Session = Depends(database.get_db)):
+    return db.query(models.Post).all()
+
+@app.get("/users", response_model=list[schemas.User])
+def read_users(
+    db: Session = Depends(database.get_db),
+    current_admin: models.User = Depends(auth.get_current_admin)
+):
+    return db.query(models.User).all()
+
+@app.get("/posts/{post_id}", response_model=schemas.Post)
+def get_post(post_id: int, db: Session = Depends(database.get_db)):
+    post = db.query(models.Post).filter(models.Post.id == post_id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    return post
+
+@app.put("/posts/{post_id}", response_model=schemas.Post)
+def update_post(
+    post_id: int,
+    payload: schemas.PostCreate,
+    db: Session = Depends(database.get_db),
+    current_admin: models.User = Depends(auth.get_current_admin)
+):
+    post = db.query(models.Post).filter(models.Post.id == post_id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    post.title = payload.title
+    post.date = payload.date
+    post.details = payload.details
+    post.image = payload.image
+    db.commit()
+    db.refresh(post)
+    return post
+
+@app.delete("/posts/{post_id}")
+def delete_post(
+    post_id: int,
+    db: Session = Depends(database.get_db),
+    current_admin: models.User = Depends(auth.get_current_admin)
+):
+    post = db.query(models.Post).filter(models.Post.id == post_id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    db.delete(post)
+    db.commit()
+    return {"detail": "Post deleted"}

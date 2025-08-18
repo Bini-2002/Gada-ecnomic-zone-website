@@ -1,10 +1,10 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import logoImage from '../images/GSEZ-Horizontal-logo.png';
 import '../index.css';
 import '../NavBar.css';
 import { ThemeContext } from './ThemeContext';
 
-export default function NavBar() {
+export default function NavBar({ userRole, onLogout }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -12,6 +12,33 @@ export default function NavBar() {
   const [isResourceOpen, setIsResourceOpen] = useState(false);
   const [isOpportunityOpen, setIsOpportunityOpen] = useState(false);
   const { isDarkMode, toggleTheme } = useContext(ThemeContext);
+  const [hasValidToken, setHasValidToken] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) { setHasValidToken(false); return; }
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const payload = JSON.parse(atob(base64));
+      const now = Math.floor(Date.now() / 1000);
+      if (payload.exp && payload.exp < now) {
+        localStorage.removeItem('token');
+        setHasValidToken(false);
+      } else {
+        setHasValidToken(true);
+      }
+    } catch {
+      setHasValidToken(false);
+    }
+  }, [userRole]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    if (onLogout) onLogout();
+    window.location.hash = '#news';
+    window.location.reload();
+  };
 
   return (
     <nav className="navbar">
@@ -105,16 +132,14 @@ export default function NavBar() {
               </div>
               <a href="#news" className="nav-link-item" onClick={(e) => { e.preventDefault(); window.location.hash = '#news'; setIsDropdownOpen(false); }}>News & Events <i className="fi fi-rr-angle-small-right"></i></a>
               {/* Only show Admin Dashboard if logged in as admin */}
-              {localStorage.getItem('token') && (() => {
-                try {
-                  const payload = JSON.parse(atob(localStorage.getItem('token').split('.')[1]));
-                  if (payload.role === 'admin') {
-                    return <a href="#admin-dashboard" className="nav-link-item" style={{color:'#e53935', fontWeight:700}}>Admin Dashboard</a>;
-                  }
-                } catch {}
-                return null;
-              })()}
-              <a href="#log-in" className="nav-link-item">Log in </a>
+              {hasValidToken && userRole === 'admin' && (
+                <a href="#admin-dashboard" className="nav-link-item" style={{ color: '#e53935', fontWeight: 700 }}>Admin Dashboard</a>
+              )}
+              {hasValidToken ? (
+                <button onClick={handleLogout} className="nav-link-item" style={{ background:'none', border:'none', cursor:'pointer', padding:0 }}>Logout</button>
+              ) : (
+                <a href="#log-in" className="nav-link-item">Log in </a>
+              )}
             </div>
           )}
         </div>

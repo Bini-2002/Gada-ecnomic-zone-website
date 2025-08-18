@@ -1,4 +1,3 @@
-
 import './index.css';
 import { useContext, useEffect, useState } from 'react';
 import NavBar from './components/NavBar.jsx';
@@ -24,6 +23,24 @@ function App() {
   const [currentView, setCurrentView] = useState(window.location.hash);
   const [userRole, setUserRole] = useState(null);
 
+  const evaluateToken = () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const now = Math.floor(Date.now() / 1000);
+        if (payload.exp && payload.exp < now) {
+          localStorage.removeItem('token');
+          setUserRole(null);
+          return;
+        }
+        setUserRole(payload.role);
+      } catch { setUserRole(null); }
+    } else {
+      setUserRole(null);
+    }
+  };
+
   useEffect(() => {
     document.body.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
   }, [isDarkMode]);
@@ -40,28 +57,14 @@ function App() {
   }, []);
 
   // Check token and set user role
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      // Decode JWT (simple base64, not secure, for demo)
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        setUserRole(payload.role);
-      } catch {
-        setUserRole(null);
-      }
-    } else {
-      setUserRole(null);
-    }
-  }, [currentView]);
+  useEffect(() => { evaluateToken(); }, [currentView]);
 
   const handleLogin = () => {
-    // After login, update role and go to admin dashboard if admin
+    evaluateToken();
     const token = localStorage.getItem('token');
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        setUserRole(payload.role);
         if (payload.role === 'admin') {
           window.location.hash = '#admin-dashboard';
         } else {
@@ -69,6 +72,12 @@ function App() {
         }
       } catch {}
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setUserRole(null);
+    window.location.hash = '#news';
   };
 
   const renderContent = () => {
@@ -116,7 +125,7 @@ function App() {
 
   return (
     <>
-      <NavBar />
+      <NavBar userRole={userRole} onLogout={handleLogout} />
       {renderContent()}
       <Footer />
     </>

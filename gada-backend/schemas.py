@@ -1,28 +1,6 @@
-
-# Post schemas
-from typing import Optional
 from pydantic import BaseModel
 
-class PostCreate(BaseModel):
-    title: str
-    date: str
-    details: str
-    image: str
-
-class Post(BaseModel):
-    id: int
-    title: str
-    date: str
-    details: str
-    image: str
-    created_at: Optional[str] = None
-
-    model_config = {
-        "from_attributes": True
-    }
-from pydantic import BaseModel
-
-
+# ----- User Schemas -----
 class UserCreate(BaseModel):
     username: str
     email: str
@@ -35,6 +13,22 @@ class User(BaseModel):
     email: str
     role: str
 
-    model_config = {
-        "from_attributes": True
-    }
+    model_config = {"from_attributes": True}
+
+# ----- Post Schemas -----
+class PostCreate(BaseModel):
+    title: str
+    date: str
+    details: str
+    image: str
+
+class Post(BaseModel):
+    id: int
+    title: str
+    date: str
+    details: str
+    image: str
+    created_at: str
+
+    model_config = {"from_attributes": True}
+

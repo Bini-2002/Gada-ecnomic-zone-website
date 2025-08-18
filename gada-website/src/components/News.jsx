@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../News.css";
+import { getPosts } from "../api";
 
 function NewsCard({ title, details, date, image }) {
   const [showMore, setShowMore] = useState(false);
@@ -38,7 +39,7 @@ function NewsCard({ title, details, date, image }) {
   );
 }
 
-export const newsData = [
+const fallbackNews = [
   {
     title: "GSEZ is building dedicated substation",
     details: `Gada Special Economic Zone (GSEZ) is equipped with its own dedicated substation, currently under construction by Ethiopian Electric Power (EEP), which is expected to generate 230 MW/h starting from July 2025. This strategic infrastructure ensures reliable and uninterrupted power supply exclusively for industries within the zone, thereby eliminating one of the major constraints often faced by investors in emerging markets. With this vital utility in place, GSEZ presents a highly attractive opportunity for both local and international investors to confidently establish and expand their operations in a well-powered and investment-friendly environment.`,
@@ -60,11 +61,35 @@ export const newsData = [
 ];
 
 function News() {
+  const [posts, setPosts] = useState([]);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const data = await getPosts();
+        if (active) {
+          setPosts(data);
+        }
+      } catch (e) {
+        setError(e.message || 'Failed to load posts');
+        setPosts(fallbackNews);
+      } finally {
+        setLoading(false);
+      }
+    })();
+    return () => { active = false; };
+  }, []);
+
   return (
     <div className="news-list-container">
       <h1 className="news-list-title">Latest News</h1>
+      {loading && <div className="news-loading">Loading...</div>}
+      {error && !loading && <div className="news-error">{error}</div>}
       <div className="news-list-grid">
-        {newsData.map((item, idx) => (
+        {(posts || []).map((item, idx) => (
           <NewsCard key={idx} {...item} />
         ))}
       </div>
@@ -73,3 +98,4 @@ function News() {
 }
 
 export default News;
+export { fallbackNews as newsData };
