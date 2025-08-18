@@ -72,15 +72,60 @@ def create_post(
     return db_post
 
 @app.get("/posts", response_model=list[schemas.Post])
-def read_posts(db: Session = Depends(database.get_db)):
-    return db.query(models.Post).all()
+def read_posts(
+    db: Session = Depends(database.get_db),
+    skip: int = 0,
+    limit: int = 50,
+    search: str | None = None
+):
+    query = db.query(models.Post)
+    if search:
+        like = f"%{search}%"
+        query = query.filter(models.Post.title.ilike(like) | models.Post.details.ilike(like))
+    posts = query.order_by(models.Post.id.desc()).offset(skip).limit(min(limit, 100)).all()
+    return posts
 
 @app.get("/users", response_model=list[schemas.User])
 def read_users(
     db: Session = Depends(database.get_db),
+    current_admin: models.User = Depends(auth.get_current_admin),
+    skip: int = 0,
+    limit: int = 50,
+    search: str | None = None
+):
+    query = db.query(models.User)
+    if search:
+        like = f"%{search}%"
+        query = query.filter(models.User.username.ilike(like) | models.User.email.ilike(like))
+    return query.order_by(models.User.id.desc()).offset(skip).limit(min(limit, 100)).all()
+
+@app.put("/users/{user_id}/role", response_model=schemas.User)
+def update_user_role(
+    user_id: int,
+    role: str,
+    db: Session = Depends(database.get_db),
     current_admin: models.User = Depends(auth.get_current_admin)
 ):
-    return db.query(models.User).all()
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    user.role = role
+    db.commit()
+    db.refresh(user)
+    return user
+
+@app.delete("/users/{user_id}")
+def delete_user(
+    user_id: int,
+    db: Session = Depends(database.get_db),
+    current_admin: models.User = Depends(auth.get_current_admin)
+):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    db.delete(user)
+    db.commit()
+    return {"detail": "User deleted"}
 
 @app.get("/posts/{post_id}", response_model=schemas.Post)
 def get_post(post_id: int, db: Session = Depends(database.get_db)):
