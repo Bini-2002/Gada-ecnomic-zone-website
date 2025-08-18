@@ -69,7 +69,11 @@ class UserApprove(BaseModel):
 
 class TokenPair(BaseModel):
     access_token: str
-    refresh_token: str
+    refresh_token: str | None = None
+    token_type: str = "bearer"
+
+class AccessToken(BaseModel):
+    access_token: str
     token_type: str = "bearer"
 
 class RefreshRequest(BaseModel):
@@ -77,6 +81,10 @@ class RefreshRequest(BaseModel):
 
 class EmailVerificationRequest(BaseModel):
     token: str
+
+class EmailVerificationAuthRequest(BaseModel):
+    username: str
+    password: str
 
 class PasswordResetRequest(BaseModel):
     email: str

@@ -39,3 +39,11 @@ class RefreshToken(Base):
     expires_at = Column(DateTime, index=True)
     revoked = Column(Boolean, default=False, index=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class RateLimit(Base):
+    __tablename__ = "rate_limits"
+    id = Column(Integer, primary_key=True)
+    scope = Column(String, index=True)
+    identifier = Column(String, index=True)  # e.g. ip:user or ip:email
+    window_start = Column(DateTime, index=True)
+    count = Column(Integer, default=0)

@@ -14,8 +14,45 @@ export async function loginUser({ username, password }) {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({ username, password }),
+    credentials: 'include'
   });
   return response.json();
+}
+
+export async function refreshAccessToken() {
+  const res = await fetch('http://localhost:8000/token/refresh', {
+    method: 'POST',
+    credentials: 'include'
+  });
+  if (!res.ok) throw new Error('Refresh failed');
+  return res.json();
+}
+
+// Generic fetch wrapper that tries refresh once on 401 then retries original request
+export async function authFetch(url, options = {}) {
+  const token = localStorage.getItem('token');
+  const headers = { ...(options.headers || {}) };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const first = await fetch(url, { ...options, headers, credentials: 'include' });
+  if (first.status !== 401) return first;
+  // attempt refresh
+  try {
+    const rt = await refreshAccessToken();
+    if (rt.access_token) {
+      localStorage.setItem('token', rt.access_token);
+      headers['Authorization'] = `Bearer ${rt.access_token}`;
+      return await fetch(url, { ...options, headers, credentials: 'include' });
+    }
+  } catch (_) {
+    // ignore
+  }
+  // logout on failure
+  localStorage.removeItem('token');
+  return first; // caller can handle 401
+}
+
+export async function logout() {
+  await fetch('http://localhost:8000/token/logout', { method: 'POST', credentials: 'include' });
 }
 
 export async function getPosts({ skip = 0, limit = 50, search, status, sort } = {}) {
@@ -37,7 +74,8 @@ export async function createPost(post, token) {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`
     },
-    body: JSON.stringify(post)
+    body: JSON.stringify(post),
+    credentials: 'include'
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.detail || 'Failed to create post');
@@ -48,7 +86,8 @@ export async function updatePost(id, post, token) {
   const res = await fetch(`http://localhost:8000/posts/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify(post)
+    body: JSON.stringify(post),
+    credentials: 'include'
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.detail || 'Failed to update post');
@@ -59,7 +98,8 @@ export async function changePostStatus(id, status, publish_at, token) {
   const res = await fetch(`http://localhost:8000/posts/${id}/status`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ status, publish_at })
+    body: JSON.stringify({ status, publish_at }),
+    credentials: 'include'
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.detail || 'Failed to change status');
@@ -67,7 +107,7 @@ export async function changePostStatus(id, status, publish_at, token) {
 }
 
 export async function deletePost(id, token) {
-  const res = await fetch(`http://localhost:8000/posts/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+  const res = await fetch(`http://localhost:8000/posts/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
   if (!res.ok) { const data = await res.json(); throw new Error(data.detail || 'Failed to delete post'); }
   return true;
 }
@@ -77,20 +117,20 @@ export async function listUsers({ skip = 0, limit = 50, search } = {}, token) {
   if (skip) params.append('skip', skip);
   if (limit) params.append('limit', limit);
   if (search) params.append('search', search);
-  const res = await fetch('http://localhost:8000/users' + (params.toString() ? `?${params}` : ''), { headers: { Authorization: `Bearer ${token}` } });
+  const res = await fetch('http://localhost:8000/users' + (params.toString() ? `?${params}` : ''), { headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
   if (!res.ok) throw new Error('Failed to load users');
   return res.json(); // { total, items }
 }
 
 export async function updateUserRole(userId, role, token) {
-  const res = await fetch(`http://localhost:8000/users/${userId}/role?role=${encodeURIComponent(role)}`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` } });
+  const res = await fetch(`http://localhost:8000/users/${userId}/role?role=${encodeURIComponent(role)}`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
   const data = await res.json();
   if (!res.ok) throw new Error(data.detail || 'Failed to update role');
   return data;
 }
 
 export async function deleteUser(userId, token) {
-  const res = await fetch(`http://localhost:8000/users/${userId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+  const res = await fetch(`http://localhost:8000/users/${userId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
   if (!res.ok) { const data = await res.json(); throw new Error(data.detail || 'Failed to delete user'); }
   return true;
 }
@@ -101,7 +141,8 @@ export async function uploadImage(file, token) {
   const res = await fetch('http://localhost:8000/upload-image', {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
-    body: form
+    body: form,
+    credentials: 'include'
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.detail || 'Failed to upload image');
@@ -112,7 +153,8 @@ export async function approveUser(userId, approved, token) {
   const res = await fetch(`http://localhost:8000/users/${userId}/approve`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ approved })
+    body: JSON.stringify({ approved }),
+    credentials: 'include'
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.detail || 'Failed to update approval');
@@ -123,7 +165,8 @@ export async function changePassword(old_password, new_password, token) {
   const res = await fetch('http://localhost:8000/users/password-change', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ old_password, new_password })
+    body: JSON.stringify({ old_password, new_password }),
+    credentials: 'include'
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.detail || 'Failed to change password');
@@ -131,13 +174,13 @@ export async function changePassword(old_password, new_password, token) {
 }
 
 export async function runPublishScheduled(token) {
-  const res = await fetch('http://localhost:8000/tasks/publish-scheduled', { method:'POST', headers:{ Authorization:`Bearer ${token}` }});
+  const res = await fetch('http://localhost:8000/tasks/publish-scheduled', { method:'POST', headers:{ Authorization:`Bearer ${token}` }, credentials:'include' });
   const data = await res.json();
   if (!res.ok) throw new Error(data.detail || 'Failed to publish scheduled');
   return data;
 }
 export async function backfillPostStatus(token) {
-  const res = await fetch('http://localhost:8000/tasks/backfill-post-status', { method:'POST', headers:{ Authorization:`Bearer ${token}` }});
+  const res = await fetch('http://localhost:8000/tasks/backfill-post-status', { method:'POST', headers:{ Authorization:`Bearer ${token}` }, credentials:'include' });
   const data = await res.json();
   if (!res.ok) throw new Error(data.detail || 'Failed to backfill');
   return data;

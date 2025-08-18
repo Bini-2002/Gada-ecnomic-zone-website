@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File, Body
+from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File, Body, Response, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
@@ -52,24 +52,46 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(database.get_d
     db.refresh(db_user)
     return db_user
 
-_RATE_LIMIT: dict[str, list[float]] = {}
-RATE_LIMIT_WINDOW = 60.0
-RATE_LIMIT_MAX = 10  # per username per window for login attempts
+LOGIN_SCOPE = "login"
+VERIFY_SCOPE = "verify"
+RESET_SCOPE = "reset"
+RATE_LIMIT_DEFS = {
+    LOGIN_SCOPE: {"window_sec": 60, "max": 5},            # 5 login attempts / 60s per ip+username
+    VERIFY_SCOPE: {"window_sec": 3600, "max": 6},         # 6 verification requests / hour
+    RESET_SCOPE: {"window_sec": 3600, "max": 3},          # 3 password reset requests / hour
+}
 
-def _rate_limit_check(key: str):
-    now = time.time()
-    window_start = now - RATE_LIMIT_WINDOW
-    bucket = _RATE_LIMIT.setdefault(key, [])
-    # drop old
-    while bucket and bucket[0] < window_start:
-        bucket.pop(0)
-    if len(bucket) >= RATE_LIMIT_MAX:
-        raise HTTPException(status_code=429, detail="Too many attempts, try later")
-    bucket.append(now)
+def _rate_limit(db: Session, scope: str, identifier: str):
+    cfg = RATE_LIMIT_DEFS[scope]
+    window = cfg["window_sec"]
+    max_allowed = cfg["max"]
+    now_dt = datetime.utcnow()
+    window_start = now_dt - timedelta(seconds=window)
+    row = db.query(models.RateLimit).filter(
+        models.RateLimit.scope == scope,
+        models.RateLimit.identifier == identifier,
+        models.RateLimit.window_start >= window_start
+    ).order_by(models.RateLimit.id.desc()).first()
+    if row and row.count >= max_allowed:
+        raise HTTPException(status_code=429, detail="Rate limit exceeded")
+    if not row or row.window_start < window_start:
+        row = models.RateLimit(scope=scope, identifier=identifier, window_start=now_dt, count=1)
+        db.add(row)
+    else:
+        row.count += 1
+    db.commit()
 
-@app.post("/token", response_model=schemas.TokenPair)
-def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(database.get_db)):
-    _rate_limit_check(f"login:{form_data.username}")
+REFRESH_COOKIE_NAME = "refresh_token"
+REFRESH_COOKIE_PATH = "/token"
+REFRESH_COOKIE_SECURE = False  # set True when using HTTPS
+
+EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS = 24
+PASSWORD_RESET_TOKEN_EXPIRE_HOURS = 24
+
+@app.post("/token", response_model=schemas.AccessToken)
+def login_for_access_token(response: Response, form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(database.get_db), request: Request = None):
+    client_ip = request.client.host if request and request.client else 'ip'
+    _rate_limit(db, LOGIN_SCOPE, f"{client_ip}:{form_data.username}")
     user = db.query(models.User).filter(models.User.username == form_data.username).first()
     if not user or not auth.verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
@@ -80,18 +102,32 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
     if not user.approved:
         raise HTTPException(status_code=403, detail="Account not yet approved")
     if not user.email_verified:
-        # issue refresh but mark need verification? Simpler: block until verified
-        pass
+        # Auto-fail with clear message
+        raise HTTPException(status_code=403, detail="Email not verified")
     access_token = auth.create_access_token(data={"sub": user.username, "role": user.role})
     refresh_raw = auth.generate_refresh_token()
-    rt = models.RefreshToken(user_id=user.id, token=refresh_raw, expires_at=datetime.utcnow() + timedelta(days=auth.REFRESH_TOKEN_EXPIRE_DAYS))
+    rt = models.RefreshToken(user_id=user.id, token=auth.hash_refresh_token(refresh_raw), expires_at=datetime.utcnow() + timedelta(days=auth.REFRESH_TOKEN_EXPIRE_DAYS))
     db.add(rt)
     db.commit()
-    return {"access_token": access_token, "refresh_token": refresh_raw, "token_type": "bearer"}
+    # HttpOnly cookie for refresh
+    response.set_cookie(
+        key=REFRESH_COOKIE_NAME,
+        value=refresh_raw,
+        httponly=True,
+        secure=REFRESH_COOKIE_SECURE,
+        samesite="lax",
+        path=REFRESH_COOKIE_PATH,
+        max_age=auth.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
 
-@app.post('/token/refresh', response_model=schemas.TokenPair)
-def refresh_token(payload: schemas.RefreshRequest, db: Session = Depends(database.get_db)):
-    token_row = db.query(models.RefreshToken).filter(models.RefreshToken.token == payload.refresh_token, models.RefreshToken.revoked == False).first()
+@app.post('/token/refresh', response_model=schemas.AccessToken)
+def refresh_token(response: Response, request: Request, db: Session = Depends(database.get_db)):
+    refresh_raw = request.cookies.get(REFRESH_COOKIE_NAME)
+    if not refresh_raw:
+        raise HTTPException(status_code=401, detail='Missing refresh token cookie')
+    hashed = auth.hash_refresh_token(refresh_raw)
+    token_row = db.query(models.RefreshToken).filter(models.RefreshToken.token == hashed, models.RefreshToken.revoked == False).first()
     if not token_row or token_row.expires_at < datetime.utcnow():
         raise HTTPException(status_code=401, detail='Invalid refresh token')
     user = db.query(models.User).filter(models.User.id == token_row.user_id).first()
@@ -101,12 +137,36 @@ def refresh_token(payload: schemas.RefreshRequest, db: Session = Depends(databas
     # rotate refresh
     token_row.revoked = True
     new_refresh = auth.generate_refresh_token()
-    db.add(models.RefreshToken(user_id=user.id, token=new_refresh, expires_at=datetime.utcnow() + timedelta(days=auth.REFRESH_TOKEN_EXPIRE_DAYS)))
+    db.add(models.RefreshToken(user_id=user.id, token=auth.hash_refresh_token(new_refresh), expires_at=datetime.utcnow() + timedelta(days=auth.REFRESH_TOKEN_EXPIRE_DAYS)))
     db.commit()
-    return {"access_token": access_token, "refresh_token": new_refresh, "token_type": "bearer"}
+    # Set rotated cookie
+    response.set_cookie(
+        key=REFRESH_COOKIE_NAME,
+        value=new_refresh,
+        httponly=True,
+        secure=REFRESH_COOKIE_SECURE,
+        samesite="lax",
+        path=REFRESH_COOKIE_PATH,
+        max_age=auth.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
+
+@app.post('/token/logout')
+def logout(response: Response, request: Request, db: Session = Depends(database.get_db)):
+    refresh_raw = request.cookies.get(REFRESH_COOKIE_NAME)
+    if refresh_raw:
+        hashed = auth.hash_refresh_token(refresh_raw)
+        row = db.query(models.RefreshToken).filter(models.RefreshToken.token == hashed, models.RefreshToken.revoked == False).first()
+        if row:
+            row.revoked = True
+            db.commit()
+    response.delete_cookie(REFRESH_COOKIE_NAME, path=REFRESH_COOKIE_PATH)
+    return {"detail": "Logged out"}
 
 @app.post('/email/send-verification')
-def send_email_verification(current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(database.get_db)):
+def send_email_verification(current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(database.get_db), request: Request = None):
+    if request and request.client:
+        _rate_limit(db, VERIFY_SCOPE, f"{request.client.host}:{current_user.id}")
     if current_user.email_verified:
         return {"detail": "Already verified"}
     current_user.email_verification_token = secrets.token_urlsafe(32)
@@ -115,20 +175,41 @@ def send_email_verification(current_user: models.User = Depends(auth.get_current
     # Placeholder: In production, send email containing the token
     return {"detail": "Verification email generated", "token": current_user.email_verification_token}
 
+@app.post('/email/send-verification-login')
+def send_email_verification_login(payload: schemas.EmailVerificationAuthRequest, db: Session = Depends(database.get_db), request: Request = None):
+    user = db.query(models.User).filter(models.User.username == payload.username).first()
+    # Validate credentials silently
+    if not user or not auth.verify_password(payload.password, user.hashed_password):
+        raise HTTPException(status_code=401, detail='Invalid credentials')
+    if user.email_verified:
+        return {"detail": "Already verified"}
+    if request and request.client:
+        _rate_limit(db, VERIFY_SCOPE, f"{request.client.host}:{user.id}")
+    user.email_verification_token = secrets.token_urlsafe(32)
+    user.email_verification_sent_at = datetime.utcnow()
+    db.commit()
+    return {"detail": "Verification email generated", "token": user.email_verification_token}
+
 @app.post('/email/verify')
 def verify_email(payload: schemas.EmailVerificationRequest, current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(database.get_db)):
     if current_user.email_verified:
         return {"detail": "Already verified"}
     if payload.token != current_user.email_verification_token:
         raise HTTPException(status_code=400, detail='Invalid token')
+    if not current_user.email_verification_sent_at or current_user.email_verification_sent_at + timedelta(hours=EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS) < datetime.utcnow():
+        raise HTTPException(status_code=400, detail='Verification token expired, request a new one')
     current_user.email_verified = True
     current_user.email_verification_token = None
+    current_user.email_verification_sent_at = None
     db.commit()
     return {"detail": "Email verified"}
 
 @app.post('/password/reset-request')
-def password_reset_request(payload: schemas.PasswordResetRequest, db: Session = Depends(database.get_db)):
+def password_reset_request(payload: schemas.PasswordResetRequest, db: Session = Depends(database.get_db), request: Request = None):
     user = db.query(models.User).filter(models.User.email == payload.email).first()
+    if request and request.client:
+        ident = f"{request.client.host}:{payload.email}"
+        _rate_limit(db, RESET_SCOPE, ident)
     if not user:
         # Do not reveal existence
         return {"detail": "If that email exists, a reset was created"}
@@ -142,9 +223,11 @@ def password_reset_perform(payload: schemas.PasswordResetPerform, db: Session = 
     user = db.query(models.User).filter(models.User.password_reset_token == payload.token).first()
     if not user:
         raise HTTPException(status_code=400, detail='Invalid token')
-    # Optional: expiry check
+    if not user.password_reset_sent_at or user.password_reset_sent_at + timedelta(hours=PASSWORD_RESET_TOKEN_EXPIRE_HOURS) < datetime.utcnow():
+        raise HTTPException(status_code=400, detail='Password reset token expired, request a new one')
     user.hashed_password = auth.get_password_hash(payload.new_password)
     user.password_reset_token = None
+    user.password_reset_sent_at = None
     db.commit()
     return {"detail": "Password reset successful"}
 
@@ -301,6 +384,21 @@ def _auto_publish_job():
     finally:
         db.close()
 
+def _cleanup_refresh_tokens_job():
+    db = next(database.get_db())
+    try:
+        now = datetime.utcnow()
+        q = db.query(models.RefreshToken).filter((models.RefreshToken.expires_at < now) | (models.RefreshToken.revoked == True))
+        # Limit deletion batch to avoid long locks
+        stale = q.limit(500).all()
+        if stale:
+            for row in stale:
+                db.delete(row)
+            db.commit()
+            logger.info("Cleanup removed %d stale refresh tokens", len(stale))
+    finally:
+        db.close()
+
 @app.on_event("startup")
 def _start_scheduler():
     global _scheduler
@@ -308,6 +406,7 @@ def _start_scheduler():
         _scheduler = BackgroundScheduler()
         _scheduler.start()
         _scheduler.add_job(_auto_publish_job, IntervalTrigger(minutes=1), id='auto_publish', replace_existing=True)
+    _scheduler.add_job(_cleanup_refresh_tokens_job, IntervalTrigger(minutes=30), id='cleanup_refresh_tokens', replace_existing=True)
 
 @app.on_event("shutdown")
 def _stop_scheduler():

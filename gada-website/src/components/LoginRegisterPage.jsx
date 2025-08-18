@@ -1,5 +1,19 @@
 import { useState } from "react";
 import { loginUser, registerUser } from "../api";
+import { useState } from 'react';
+async function resendVerification(username, password, setMessage) {
+  const res = await fetch('http://localhost:8000/email/send-verification-login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  });
+  const data = await res.json();
+  if (res.ok) {
+    setMessage('Verification email sent (token shown only in dev): ' + (data.token || '')); 
+  } else {
+    setMessage(data.detail || 'Failed to send verification');
+  }
+}
 import "../LoginRegisterPage.css";
 
 export default function LoginRegisterPage({ onLogin }) {
@@ -14,13 +28,15 @@ export default function LoginRegisterPage({ onLogin }) {
     e.preventDefault();
     setMessage("");
     const res = await loginUser({ username, password });
-    if (res.access_token) {
+  if (res.access_token) {
       localStorage.setItem("token", res.access_token);
       setMessage("Login successful!");
       if (onLogin) onLogin();
     } else {
       if (res.detail === 'Account not yet approved') {
         setMessage('Your account is pending approval by an administrator.');
+      } else if (res.detail === 'Email not verified') {
+        setMessage('Email not verified. Please verify your email.');
       } else {
         setMessage(res.detail || "Login failed.");
       }
@@ -73,6 +89,11 @@ export default function LoginRegisterPage({ onLogin }) {
           <span>Already have an account? <button className="switch-link" onClick={()=>setIsLogin(true)}>Log In</button></span>
         )}
       </div>
+      {isLogin && message.includes('Email not verified') && (
+        <div style={{marginTop:12,textAlign:'center'}}>
+          <button onClick={()=>resendVerification(username, password, setMessage)}>Resend Verification Email</button>
+        </div>
+      )}
     </div>
   );
 }
