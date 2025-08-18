@@ -41,3 +41,4 @@ If your existing `gada.db` lacks new columns (e.g., `approved`), you can either:
 - Keep `models.py` as the single source of truth.
 - Always autogenerate then inspect migrations before applying.
 - Commit migration scripts alongside model changes.
+- Define a strong `SECRET_KEY` in a `.env` file (see `.env.example`) before running the app; the server will fail fast if it's missing.
