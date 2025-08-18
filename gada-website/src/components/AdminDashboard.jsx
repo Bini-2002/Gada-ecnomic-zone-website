@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { createPost, getPosts } from "../api";
+import { createPost, getPosts, updatePost, listUsers, updateUserRole, deleteUser, uploadImage } from "../api";
 import "../AdminDashboard.css";
 
 // Import newsData from News.jsx
@@ -20,6 +20,19 @@ export default function AdminDashboard() {
   const [localPosts, setLocalPosts] = useState([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
   const [error, setError] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [usersLoading, setUsersLoading] = useState(true);
+  const [usersError, setUsersError] = useState(null);
+  const [userSearch, setUserSearch] = useState("");
+  const [userSkip, setUserSkip] = useState(0);
+  const [userHasMore, setUserHasMore] = useState(true);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editId, setEditId] = useState(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDate, setEditDate] = useState("");
+  const [editDetails, setEditDetails] = useState("");
+  const [editImage, setEditImage] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
   const token = localStorage.getItem('token');
 
   useEffect(() => {
@@ -32,6 +45,23 @@ export default function AdminDashboard() {
     })();
   }, []);
 
+  // Load users
+  useEffect(() => {
+    let active = true;
+    setUsersLoading(true);
+    (async () => {
+      try {
+        const data = await listUsers({ skip: 0, limit: 25, search: userSearch }, token);
+        if (!active) return;
+        setUsers(data);
+        setUserSkip(data.length);
+        setUserHasMore(data.length === 25);
+      } catch (e) { if (active) setUsersError(e.message); }
+      finally { if (active) setUsersLoading(false); }
+    })();
+    return () => { active = false; };
+  }, [userSearch]);
+
   // Approve registration (dummy, replace with backend call if needed)
   const approveRegistration = (id) => {
     setRegistrations((regs) =>
@@ -41,15 +71,18 @@ export default function AdminDashboard() {
     );
   };
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPostImage(reader.result);
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
+      setImagePreview(URL.createObjectURL(file));
+      try {
+        const uploaded = await uploadImage(file, token);
+        setPostImage(uploaded.url); // store URL path
+      } catch (err) {
+        alert('Image upload failed: ' + err.message);
+        setPostImage('');
+        setImagePreview('');
+      }
     } else {
       setPostImage("");
       setImagePreview("");
@@ -81,19 +114,65 @@ export default function AdminDashboard() {
     } catch (e) { alert(e.message); }
   };
 
-  const handleUpdate = async (id) => {
-    const post = localPosts.find(p => p.id === id);
-    if (!post) return;
-    const title = prompt('Title', post.title) ?? post.title;
-    const date = prompt('Date (YYYY-MM-DD)', post.date) ?? post.date;
-    const details = prompt('Details', post.details) ?? post.details;
-    const image = post.image; // keep existing (skip editing here)
+  const loadMoreUsers = async () => {
+    if (!userHasMore) return;
     try {
-      const res = await fetch(`http://localhost:8000/posts/${id}`, { method:'PUT', headers:{ 'Content-Type':'application/json', Authorization:`Bearer ${token}` }, body: JSON.stringify({ title, date, details, image }) });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || 'Update failed');
-      setLocalPosts(p => p.map(x => x.id === id ? data : x));
+      const batch = await listUsers({ skip: userSkip, limit: 25, search: userSearch }, token);
+      setUsers(u => [...u, ...batch]);
+      setUserSkip(s => s + batch.length);
+      setUserHasMore(batch.length === 25);
     } catch (e) { alert(e.message); }
+  };
+
+  const handleRoleChange = async (userId, newRole) => {
+    try {
+      const updated = await updateUserRole(userId, newRole, token);
+      setUsers(u => u.map(us => us.id === userId ? updated : us));
+    } catch (e) { alert(e.message); }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm('Delete this user?')) return;
+    try {
+      await deleteUser(userId, token);
+      setUsers(u => u.filter(us => us.id !== userId));
+    } catch (e) { alert(e.message); }
+  };
+
+  const openEditPost = (post) => {
+    setEditId(post.id);
+    setEditTitle(post.title);
+    setEditDate(post.date);
+    setEditDetails(post.details);
+    setEditImage(post.image);
+    setEditModalOpen(true);
+  };
+  const closeEditModal = () => { if (!savingEdit) setEditModalOpen(false); };
+  const handleEditImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const uploaded = await uploadImage(file, token);
+      setEditImage(uploaded.url);
+    } catch (err) {
+      alert('Image upload failed: ' + err.message);
+    }
+  };
+  const saveEdit = async (e) => {
+    e.preventDefault();
+    setSavingEdit(true);
+    try {
+      const updated = await updatePost(editId, { title: editTitle, date: editDate, details: editDetails, image: editImage }, token);
+      setLocalPosts(p => p.map(x => x.id === editId ? updated : x));
+      setEditModalOpen(false);
+    } catch (e) { alert(e.message); }
+    finally { setSavingEdit(false); }
+  };
+
+  // Replace old prompt edit trigger
+  const handleUpdate = (id) => {
+    const post = localPosts.find(p => p.id === id);
+    if (post) openEditPost(post);
   };
 
   return (
@@ -187,6 +266,86 @@ export default function AdminDashboard() {
           ))}
         </div>
       </div>
+      <div className="admin-section">
+        <h2>User Management</h2>
+        <div style={{display:'flex', gap:'0.5rem', marginBottom:'0.75rem'}}>
+          <input
+            type="text"
+            placeholder="Search users..."
+            value={userSearch}
+            onChange={e => setUserSearch(e.target.value)}
+            className="post-input"
+            style={{flex:1}}
+          />
+          <button className="approve-btn" type="button" onClick={() => setUserSearch(s => s)}>Search</button>
+        </div>
+        {usersLoading && <div>Loading users...</div>}
+        {usersError && <div style={{color:'red'}}>{usersError}</div>}
+        {!usersLoading && users.length === 0 && <div>No users found.</div>}
+        {users.length > 0 && (
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map(u => (
+                <tr key={u.id}>
+                  <td>{u.id}</td>
+                  <td>{u.username}</td>
+                  <td>{u.email}</td>
+                  <td>
+                    <select
+                      value={u.role}
+                      onChange={e => handleRoleChange(u.id, e.target.value)}
+                      style={{padding:'0.3rem', borderRadius:'0.4rem'}}
+                    >
+                      <option value="user">user</option>
+                      <option value="admin">admin</option>
+                    </select>
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteUser(u.id)}
+                      className="approve-btn"
+                      style={{background:'#555'}}
+                    >Delete</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+        {userHasMore && !usersLoading && (
+          <button className="approve-btn" type="button" onClick={loadMoreUsers}>Load More</button>
+        )}
+      </div>
+
+      {/* Edit Post Modal */}
+      {editModalOpen && (
+        <div className="modal-overlay" onMouseDown={closeEditModal}>
+          <div className="modal" onMouseDown={e => e.stopPropagation()}>
+            <h3>Edit Post</h3>
+            <form onSubmit={saveEdit} className="modal-form">
+              <input className="post-input" value={editTitle} onChange={e=>setEditTitle(e.target.value)} required />
+              <input className="post-input" type="date" value={editDate} onChange={e=>setEditDate(e.target.value)} required />
+              <textarea className="post-textarea" value={editDetails} onChange={e=>setEditDetails(e.target.value)} required />
+              <input type="file" accept="image/*" onChange={handleEditImageChange} />
+              {editImage && <img src={editImage} alt="preview" style={{maxWidth:'160px', marginTop:'0.5rem', borderRadius:'0.5rem'}} />}
+              <div style={{display:'flex', justifyContent:'flex-end', gap:'0.5rem', marginTop:'0.75rem'}}>
+                <button type="button" disabled={savingEdit} onClick={closeEditModal} className="approve-btn" style={{background:'#777'}}>Cancel</button>
+                <button type="submit" disabled={savingEdit} className="approve-btn" style={{background:'#1976d2'}}>{savingEdit ? 'Saving...' : 'Save'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

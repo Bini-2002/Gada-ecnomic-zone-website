@@ -81,3 +81,16 @@ export async function deleteUser(userId, token) {
   if (!res.ok) { const data = await res.json(); throw new Error(data.detail || 'Failed to delete user'); }
   return true;
 }
+
+export async function uploadImage(file, token) {
+  const form = new FormData();
+  form.append('file', file);
+  const res = await fetch('http://localhost:8000/upload-image', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: form
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || 'Failed to upload image');
+  return data; // { filename, url }
+}

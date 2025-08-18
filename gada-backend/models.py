@@ -18,5 +18,5 @@ class Post(Base):
     title = Column(String)
     date = Column(String)
     details = Column(String)
-    image = Column(String)
+    image = Column(String)  # stores filename (served from /uploads)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)

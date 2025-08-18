@@ -1,13 +1,20 @@
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+import os, uuid, shutil
 
 import auth, models, schemas, database
 
 models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI()
+
+# Ensure uploads directory exists and mount static
+UPLOAD_DIR = os.path.join(os.path.dirname(__file__), 'uploads')
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+app.mount('/uploads', StaticFiles(directory=UPLOAD_DIR), name='uploads')
 
 # CORS Middleware
 app.add_middleware(
@@ -70,6 +77,22 @@ def create_post(
     db.commit()
     db.refresh(db_post)
     return db_post
+
+@app.post('/upload-image')
+def upload_image(
+    file: UploadFile = File(...),
+    current_admin: models.User = Depends(auth.get_current_admin)
+):
+    # Basic content-type check
+    if not file.content_type.startswith('image/'):
+        raise HTTPException(status_code=400, detail='Only image uploads allowed')
+    ext = os.path.splitext(file.filename)[1].lower() or '.img'
+    filename = f"{uuid.uuid4().hex}{ext}"
+    dest_path = os.path.join(UPLOAD_DIR, filename)
+    with open(dest_path, 'wb') as out_file:
+        shutil.copyfileobj(file.file, out_file)
+    # Return relative URL path
+    return { 'filename': filename, 'url': f"/uploads/{filename}" }
 
 @app.get("/posts", response_model=list[schemas.Post])
 def read_posts(
