@@ -18,11 +18,13 @@ export async function loginUser({ username, password }) {
   return response.json();
 }
 
-export async function getPosts({ skip = 0, limit = 50, search } = {}) {
+export async function getPosts({ skip = 0, limit = 50, search, status, sort } = {}) {
   const params = new URLSearchParams();
   if (skip) params.append('skip', skip);
   if (limit) params.append('limit', limit);
   if (search) params.append('search', search);
+  if (status) params.append('status', status);
+  if (sort) params.append('sort', sort);
   const res = await fetch('http://localhost:8000/posts' + (params.toString() ? `?${params}` : ''));
   if (!res.ok) throw new Error('Failed to load posts');
   return res.json(); // { total, items }
@@ -50,6 +52,17 @@ export async function updatePost(id, post, token) {
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.detail || 'Failed to update post');
+  return data;
+}
+
+export async function changePostStatus(id, status, publish_at, token) {
+  const res = await fetch(`http://localhost:8000/posts/${id}/status`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ status, publish_at })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || 'Failed to change status');
   return data;
 }
 
@@ -114,5 +127,18 @@ export async function changePassword(old_password, new_password, token) {
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.detail || 'Failed to change password');
+  return data;
+}
+
+export async function runPublishScheduled(token) {
+  const res = await fetch('http://localhost:8000/tasks/publish-scheduled', { method:'POST', headers:{ Authorization:`Bearer ${token}` }});
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || 'Failed to publish scheduled');
+  return data;
+}
+export async function backfillPostStatus(token) {
+  const res = await fetch('http://localhost:8000/tasks/backfill-post-status', { method:'POST', headers:{ Authorization:`Bearer ${token}` }});
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || 'Failed to backfill');
   return data;
 }

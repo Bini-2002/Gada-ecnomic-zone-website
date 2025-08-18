@@ -4,6 +4,10 @@ from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import os, uuid, shutil
+from dotenv import load_dotenv
+
+# Load environment variables from .env if present
+load_dotenv()
 
 import auth, models, schemas, database
 
@@ -79,8 +83,16 @@ def create_post(
         title=post.title,
         date=post.date,
         details=post.details,
-        image=post.image
+        image=post.image,
+        status=post.status or 'draft'
     )
+    # optional publish_at string to datetime
+    if post.publish_at:
+        try:
+            from datetime import datetime
+            db_post.publish_at = datetime.fromisoformat(post.publish_at)
+        except ValueError:
+            raise HTTPException(status_code=400, detail='Invalid publish_at format (use ISO8601)')
     db.add(db_post)
     db.commit()
     db.refresh(db_post)
@@ -122,15 +134,64 @@ def read_posts(
     db: Session = Depends(database.get_db),
     skip: int = 0,
     limit: int = 50,
-    search: str | None = None
+    search: str | None = None,
+    status: str | None = None,
+    sort: str | None = None,
+    current_user: models.User | None = Depends(auth.get_current_user_optional)
 ):
+    # Non-admin users see only published posts (status=published and publish_at <= now OR no publish_at but status=published)
+    from datetime import datetime
     query = db.query(models.Post)
+    if not current_user or current_user.role != 'admin':
+        now = datetime.utcnow()
+        query = query.filter(
+            (models.Post.status == 'published') & (
+                (models.Post.publish_at == None) | (models.Post.publish_at <= now)
+            )
+        )
+    if status and status != 'all':
+        query = query.filter(models.Post.status == status)
     if search:
         like = f"%{search}%"
         query = query.filter(models.Post.title.ilike(like) | models.Post.details.ilike(like))
     total = query.count()
-    posts = query.order_by(models.Post.id.desc()).offset(skip).limit(min(limit, 100)).all()
+    # Sorting: created_at desc (default), or created_at asc, or publish_at asc/desc
+    if sort == 'created_asc':
+        query = query.order_by(models.Post.id.asc())
+    elif sort == 'publish_at_asc':
+        from sqlalchemy import asc
+        query = query.order_by(models.Post.publish_at.asc().nullslast(), models.Post.id.desc())
+    elif sort == 'publish_at_desc':
+        from sqlalchemy import desc
+        query = query.order_by(models.Post.publish_at.desc().nullslast(), models.Post.id.desc())
+    else:
+        query = query.order_by(models.Post.id.desc())
+    posts = query.offset(skip).limit(min(limit, 100)).all()
     return {"total": total, "items": posts}
+
+@app.post('/tasks/publish-scheduled')
+def publish_scheduled(db: Session = Depends(database.get_db), current_admin: models.User = Depends(auth.get_current_admin)):
+    """Flip scheduled posts whose publish_at <= now to published. Returns count updated."""
+    from datetime import datetime
+    now = datetime.utcnow()
+    q = db.query(models.Post).filter(models.Post.status == 'scheduled', models.Post.publish_at != None, models.Post.publish_at <= now)
+    count = 0
+    for post in q.all():
+        post.status = 'published'
+        count += 1
+    db.commit()
+    return {"updated": count}
+
+@app.post('/tasks/backfill-post-status')
+def backfill_post_status(db: Session = Depends(database.get_db), current_admin: models.User = Depends(auth.get_current_admin)):
+    """Set status='published' for posts with NULL status (legacy rows)."""
+    q = db.query(models.Post).filter(models.Post.status == None)
+    count = 0
+    for post in q.all():
+        post.status = 'published'
+        count += 1
+    db.commit()
+    return {"updated": count}
 
 @app.get("/users", response_model=schemas.UserList)
 def read_users(
@@ -213,7 +274,7 @@ def get_post(post_id: int, db: Session = Depends(database.get_db)):
 @app.put("/posts/{post_id}", response_model=schemas.Post)
 def update_post(
     post_id: int,
-    payload: schemas.PostCreate,
+    payload: schemas.PostUpdate,
     db: Session = Depends(database.get_db),
     current_admin: models.User = Depends(auth.get_current_admin)
 ):
@@ -224,6 +285,41 @@ def update_post(
     post.date = payload.date
     post.details = payload.details
     post.image = payload.image
+    if payload.status:
+        post.status = payload.status
+    if payload.publish_at is not None:
+        if payload.publish_at == '':
+            post.publish_at = None
+        else:
+            from datetime import datetime
+            try:
+                post.publish_at = datetime.fromisoformat(payload.publish_at)
+            except ValueError:
+                raise HTTPException(status_code=400, detail='Invalid publish_at format (use ISO8601)')
+    db.commit()
+    db.refresh(post)
+    return post
+
+@app.patch('/posts/{post_id}/status', response_model=schemas.Post)
+def change_post_status(
+    post_id: int,
+    payload: schemas.PostStatusChange,
+    db: Session = Depends(database.get_db),
+    current_admin: models.User = Depends(auth.get_current_admin)
+):
+    post = db.query(models.Post).filter(models.Post.id == post_id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail='Post not found')
+    post.status = payload.status
+    if payload.publish_at is not None:
+        if payload.publish_at == '':
+            post.publish_at = None
+        else:
+            from datetime import datetime
+            try:
+                post.publish_at = datetime.fromisoformat(payload.publish_at)
+            except ValueError:
+                raise HTTPException(status_code=400, detail='Invalid publish_at format (use ISO8601)')
     db.commit()
     db.refresh(post)
     return post

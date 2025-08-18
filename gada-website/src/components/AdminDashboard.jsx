@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { createPost, getPosts, updatePost, listUsers, updateUserRole, deleteUser, uploadImage, approveUser, changePassword } from "../api";
+import { runPublishScheduled, backfillPostStatus } from "../api";
 import "../AdminDashboard.css";
 
 // Import newsData from News.jsx
@@ -36,17 +37,32 @@ export default function AdminDashboard() {
   const [passwordOld, setPasswordOld] = useState("");
   const [passwordNew, setPasswordNew] = useState("");
   const [passwordMsg, setPasswordMsg] = useState("");
+  const [postStatus, setPostStatus] = useState('draft');
+  const [postPublishAt, setPostPublishAt] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [sortMode, setSortMode] = useState('created_desc');
+  const [postsTotal, setPostsTotal] = useState(0);
   const token = localStorage.getItem('token');
 
   useEffect(() => {
     (async () => {
       try {
-        const data = await getPosts();
-        setLocalPosts(data);
+        const data = await getPosts({ status: filterStatus, sort: mapSort(sortMode) });
+        setLocalPosts(data.items);
+        setPostsTotal(data.total);
       } catch (e) { setError(e.message); }
       finally { setLoadingPosts(false); }
     })();
-  }, []);
+  }, [filterStatus, sortMode]);
+
+  function mapSort(mode){
+    switch(mode){
+      case 'created_asc': return 'created_asc';
+      case 'publish_at_asc': return 'publish_at_asc';
+      case 'publish_at_desc': return 'publish_at_desc';
+      default: return undefined; // created_desc default
+    }
+  }
 
   // Load users
   useEffect(() => {
@@ -96,12 +112,13 @@ export default function AdminDashboard() {
   const handleCreatePost = async (e) => {
     e.preventDefault();
     if (!(postTitle && postDate && postDetails && postImage)) return;
-    const newPost = { title: postTitle, date: postDate, details: postDetails, image: postImage };
+    const newPost = { title: postTitle, date: postDate, details: postDetails, image: postImage, status: postStatus, publish_at: postPublishAt || null };
     try {
       const created = await createPost(newPost, token);
       setLocalPosts(p => [created, ...p]);
+      setPostsTotal(t=>t+1);
       // reset
-      setPostTitle(""); setPostDate(""); setPostDetails(""); setPostImage(""); setImagePreview("");
+      setPostTitle(""); setPostDate(""); setPostDetails(""); setPostImage(""); setImagePreview(""); setPostStatus('draft'); setPostPublishAt('');
       const input = document.getElementById('news-image-input'); if (input) input.value = '';
     } catch (e) {
       alert('Failed to create post: ' + e.message);
@@ -114,6 +131,7 @@ export default function AdminDashboard() {
       const res = await fetch(`http://localhost:8000/posts/${id}`, { method:'DELETE', headers:{ Authorization:`Bearer ${token}` } });
       if (!res.ok) { const data = await res.json(); throw new Error(data.detail || 'Delete failed'); }
       setLocalPosts(p => p.filter(post => post.id !== id));
+      setPostsTotal(t=>t-1);
     } catch (e) { alert(e.message); }
   };
 
@@ -154,6 +172,8 @@ export default function AdminDashboard() {
     setEditDate(post.date);
     setEditDetails(post.details);
     setEditImage(post.image);
+    setEditStatus(post.status || 'draft');
+    setEditPublishAt(post.publish_at ? post.publish_at.slice(0,16) : '');
     setEditModalOpen(true);
   };
   const closeEditModal = () => { if (!savingEdit) setEditModalOpen(false); };
@@ -171,9 +191,8 @@ export default function AdminDashboard() {
     e.preventDefault();
     setSavingEdit(true);
     try {
-      const updated = await updatePost(editId, { title: editTitle, date: editDate, details: editDetails, image: editImage }, token);
+      const updated = await updatePost(editId, { title: editTitle, date: editDate, details: editDetails, image: editImage, status: editStatus, publish_at: editPublishAt || null }, token);
       setLocalPosts(p => p.map(x => x.id === editId ? updated : x));
-      setEditModalOpen(false);
     } catch (e) { alert(e.message); }
     finally { setSavingEdit(false); }
   };
@@ -221,6 +240,29 @@ export default function AdminDashboard() {
       </div>
       <div className="admin-section">
         <h2>Create Post</h2>
+        <div style={{display:'flex', gap:'0.5rem', flexWrap:'wrap', marginBottom:'0.75rem'}}>
+          <div>Filter:
+            <select value={filterStatus} onChange={e=>setFilterStatus(e.target.value)} style={{marginLeft:'0.3rem'}}>
+              <option value="all">All</option>
+              <option value="draft">Draft</option>
+              <option value="scheduled">Scheduled</option>
+              <option value="published">Published</option>
+            </select>
+          </div>
+          <div>Sort:
+            <select value={sortMode} onChange={e=>setSortMode(e.target.value)} style={{marginLeft:'0.3rem'}}>
+              <option value="created_desc">Newest</option>
+              <option value="created_asc">Oldest</option>
+              <option value="publish_at_asc">Publish Time Asc</option>
+              <option value="publish_at_desc">Publish Time Desc</option>
+            </select>
+          </div>
+          <div style={{display:'flex', gap:'0.4rem'}}>
+            <button type="button" className="approve-btn" style={{background:'#6a1b9a'}} onClick={async()=>{ try { const r = await runPublishScheduled(token); alert(`Published ${r.updated} posts`); reloadPosts(); } catch(e){ alert(e.message);} }}>Run Publish</button>
+            <button type="button" className="approve-btn" style={{background:'#455a64'}} onClick={async()=>{ if(!window.confirm('Backfill null statuses?')) return; try { const r = await backfillPostStatus(token); alert(`Backfilled ${r.updated}`); reloadPosts(); } catch(e){ alert(e.message);} }}>Backfill Status</button>
+          </div>
+          <div style={{marginLeft:'auto', fontWeight:600}}>Total: {postsTotal}</div>
+        </div>
         <form className="post-form" onSubmit={handleCreatePost}>
           <input
             type="text"
@@ -256,6 +298,14 @@ export default function AdminDashboard() {
           {imagePreview && (
             <img src={imagePreview} alt="Preview" style={{maxWidth:'180px',marginTop:'0.5rem',borderRadius:'0.5rem',border:'2px solid #e53935'}} />
           )}
+          <select value={postStatus} onChange={e=>setPostStatus(e.target.value)} className="post-input" required>
+            <option value="draft">Draft</option>
+            <option value="published">Publish Now</option>
+            <option value="scheduled">Scheduled</option>
+          </select>
+          {postStatus === 'scheduled' && (
+            <input type="datetime-local" value={postPublishAt} onChange={e=>setPostPublishAt(e.target.value)} className="post-input" />
+          )}
           <button type="submit" className="create-post-btn">Create Post</button>
         </form>
         <div className="posts-list">
@@ -264,7 +314,7 @@ export default function AdminDashboard() {
           {localPosts.map((post) => (
             <div className="post-card" key={post.id}>
               <h3>{post.title}</h3>
-              <div className="post-date">{post.date}</div>
+              <div className="post-date">{post.date} <span style={{fontSize:'0.75rem', padding:'0.15rem 0.4rem', borderRadius:'0.4rem', background:'#eee', marginLeft:'0.5rem'}}>{post.status}</span></div>
               <p>{post.details}</p>
               {post.image && <img src={post.image} alt={post.title} style={{maxWidth:'100%',marginTop:'0.5rem',borderRadius:'0.5rem'}} />}
               <div style={{marginTop:'0.5rem',display:'flex',gap:'0.5rem'}}>
@@ -360,6 +410,14 @@ export default function AdminDashboard() {
               <textarea className="post-textarea" value={editDetails} onChange={e=>setEditDetails(e.target.value)} required />
               <input type="file" accept="image/*" onChange={handleEditImageChange} />
               {editImage && <img src={editImage} alt="preview" style={{maxWidth:'160px', marginTop:'0.5rem', borderRadius:'0.5rem'}} />}
+              <select className="post-input" value={editStatus} onChange={e=>setEditStatus(e.target.value)}>
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+                <option value="scheduled">Scheduled</option>
+              </select>
+              {editStatus === 'scheduled' && (
+                <input type="datetime-local" className="post-input" value={editPublishAt} onChange={e=>setEditPublishAt(e.target.value)} />
+              )}
               <div style={{display:'flex', justifyContent:'flex-end', gap:'0.5rem', marginTop:'0.75rem'}}>
                 <button type="button" disabled={savingEdit} onClick={closeEditModal} className="approve-btn" style={{background:'#777'}}>Cancel</button>
                 <button type="submit" disabled={savingEdit} className="approve-btn" style={{background:'#1976d2'}}>{savingEdit ? 'Saving...' : 'Save'}</button>
@@ -371,3 +429,6 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
+// helper to reload posts after task
+function reloadPosts(){ /* intentionally left; component uses effect on filter/sort state */ }

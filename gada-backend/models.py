@@ -23,3 +23,5 @@ class Post(Base):
     details = Column(String)
     image = Column(String)  # stores filename (served from /uploads)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    status = Column(String, default='draft')  # draft | scheduled | published
+    publish_at = Column(DateTime, nullable=True)  # when scheduled to go live

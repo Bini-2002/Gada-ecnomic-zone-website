@@ -1,7 +1,7 @@
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 import models, database
@@ -42,6 +42,22 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     user = db.query(models.User).filter(models.User.username == username).first()
     if user is None:
         raise credentials_exception
+    return user
+
+def get_current_user_optional(request: Request, db: Session = Depends(database.get_db)):
+    """Return current user if Authorization header present and valid; else None."""
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.lower().startswith("bearer "):
+        return None
+    token = auth_header.split()[1]
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            return None
+    except JWTError:
+        return None
+    user = db.query(models.User).filter(models.User.username == username).first()
     return user
 
 # Dependency to check if current user is admin
