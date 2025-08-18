@@ -19,7 +19,11 @@ export default function LoginRegisterPage({ onLogin }) {
       setMessage("Login successful!");
       if (onLogin) onLogin();
     } else {
-      setMessage(res.detail || "Login failed.");
+      if (res.detail === 'Account not yet approved') {
+        setMessage('Your account is pending approval by an administrator.');
+      } else {
+        setMessage(res.detail || "Login failed.");
+      }
     }
   };
 

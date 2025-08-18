@@ -7,7 +7,9 @@ import os, uuid, shutil
 
 import auth, models, schemas, database
 
-models.Base.metadata.create_all(bind=database.engine)
+# Optional automatic table creation (disable with AUTO_CREATE=0 when migrations in place)
+if os.getenv("AUTO_CREATE", "1") == "1":
+    models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI()
 
@@ -46,6 +48,12 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    if not user.approved:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account not yet approved",
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token = auth.create_access_token(data={"sub": user.username, "role": user.role})
