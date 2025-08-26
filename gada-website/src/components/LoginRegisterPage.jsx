@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { loginUser, registerUser } from "../api";
-import { useState } from 'react';
+import { API_BASE } from '../config';
 async function resendVerification(username, password, setMessage) {
-  const res = await fetch('http://localhost:8000/email/send-verification-login', {
+  const res = await fetch(`${API_BASE}/email/send-verification-login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, password })

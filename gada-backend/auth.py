@@ -8,9 +8,10 @@ from sqlalchemy.orm import Session
 import models, database
 import os
 from dotenv import load_dotenv
+from pathlib import Path
 
-# Load .env once (idempotent if already loaded)
-load_dotenv()
+# Load .env from backend directory to ensure SECRET_KEY is found even when cwd differs
+load_dotenv(dotenv_path=Path(__file__).parent / '.env')
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 if not SECRET_KEY:

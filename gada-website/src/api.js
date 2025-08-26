@@ -1,7 +1,8 @@
 // src/api.js
+import { API_BASE } from './config';
 
 export async function registerUser({ username, email, password, role }) {
-  const response = await fetch('http://localhost:8000/register', {
+  const response = await fetch(`${API_BASE}/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, email, password, role }),
@@ -10,7 +11,7 @@ export async function registerUser({ username, email, password, role }) {
 }
 
 export async function loginUser({ username, password }) {
-  const response = await fetch('http://localhost:8000/token', {
+  const response = await fetch(`${API_BASE}/token`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({ username, password }),
@@ -20,7 +21,7 @@ export async function loginUser({ username, password }) {
 }
 
 export async function refreshAccessToken() {
-  const res = await fetch('http://localhost:8000/token/refresh', {
+  const res = await fetch(`${API_BASE}/token/refresh`, {
     method: 'POST',
     credentials: 'include'
   });
@@ -52,7 +53,7 @@ export async function authFetch(url, options = {}) {
 }
 
 export async function logout() {
-  await fetch('http://localhost:8000/token/logout', { method: 'POST', credentials: 'include' });
+  await fetch(`${API_BASE}/token/logout`, { method: 'POST', credentials: 'include' });
 }
 
 export async function getPosts({ skip = 0, limit = 50, search, status, sort } = {}) {
@@ -62,13 +63,13 @@ export async function getPosts({ skip = 0, limit = 50, search, status, sort } = 
   if (search) params.append('search', search);
   if (status) params.append('status', status);
   if (sort) params.append('sort', sort);
-  const res = await fetch('http://localhost:8000/posts' + (params.toString() ? `?${params}` : ''));
+  const res = await fetch(`${API_BASE}/posts` + (params.toString() ? `?${params}` : ''));
   if (!res.ok) throw new Error('Failed to load posts');
   return res.json(); // { total, items }
 }
 
 export async function createPost(post, token) {
-  const res = await fetch('http://localhost:8000/posts', {
+  const res = await fetch(`${API_BASE}/posts`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -83,7 +84,7 @@ export async function createPost(post, token) {
 }
 
 export async function updatePost(id, post, token) {
-  const res = await fetch(`http://localhost:8000/posts/${id}`, {
+  const res = await fetch(`${API_BASE}/posts/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
     body: JSON.stringify(post),
@@ -95,7 +96,7 @@ export async function updatePost(id, post, token) {
 }
 
 export async function changePostStatus(id, status, publish_at, token) {
-  const res = await fetch(`http://localhost:8000/posts/${id}/status`, {
+  const res = await fetch(`${API_BASE}/posts/${id}/status`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
     body: JSON.stringify({ status, publish_at }),
@@ -107,7 +108,7 @@ export async function changePostStatus(id, status, publish_at, token) {
 }
 
 export async function deletePost(id, token) {
-  const res = await fetch(`http://localhost:8000/posts/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
+  const res = await fetch(`${API_BASE}/posts/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
   if (!res.ok) { const data = await res.json(); throw new Error(data.detail || 'Failed to delete post'); }
   return true;
 }
@@ -138,7 +139,7 @@ export async function deleteUser(userId, token) {
 export async function uploadImage(file, token) {
   const form = new FormData();
   form.append('file', file);
-  const res = await fetch('http://localhost:8000/upload-image', {
+  const res = await fetch(`${API_BASE}/upload-image`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
     body: form,
@@ -150,7 +151,7 @@ export async function uploadImage(file, token) {
 }
 
 export async function approveUser(userId, approved, token) {
-  const res = await fetch(`http://localhost:8000/users/${userId}/approve`, {
+  const res = await fetch(`${API_BASE}/users/${userId}/approve`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
     body: JSON.stringify({ approved }),
@@ -162,7 +163,7 @@ export async function approveUser(userId, approved, token) {
 }
 
 export async function changePassword(old_password, new_password, token) {
-  const res = await fetch('http://localhost:8000/users/password-change', {
+  const res = await fetch(`${API_BASE}/users/password-change`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
     body: JSON.stringify({ old_password, new_password }),
@@ -174,13 +175,13 @@ export async function changePassword(old_password, new_password, token) {
 }
 
 export async function runPublishScheduled(token) {
-  const res = await fetch('http://localhost:8000/tasks/publish-scheduled', { method:'POST', headers:{ Authorization:`Bearer ${token}` }, credentials:'include' });
+  const res = await fetch(`${API_BASE}/tasks/publish-scheduled`, { method:'POST', headers:{ Authorization:`Bearer ${token}` }, credentials:'include' });
   const data = await res.json();
   if (!res.ok) throw new Error(data.detail || 'Failed to publish scheduled');
   return data;
 }
 export async function backfillPostStatus(token) {
-  const res = await fetch('http://localhost:8000/tasks/backfill-post-status', { method:'POST', headers:{ Authorization:`Bearer ${token}` }, credentials:'include' });
+  const res = await fetch(`${API_BASE}/tasks/backfill-post-status`, { method:'POST', headers:{ Authorization:`Bearer ${token}` }, credentials:'include' });
   const data = await res.json();
   if (!res.ok) throw new Error(data.detail || 'Failed to backfill');
   return data;

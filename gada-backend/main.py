@@ -6,12 +6,13 @@ from fastapi.staticfiles import StaticFiles
 import os, uuid, shutil, secrets, time
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
+from pathlib import Path
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 import logging
 
-# Load environment variables from .env if present
-load_dotenv()
+# Load environment variables from .env next to this file
+load_dotenv(dotenv_path=Path(__file__).parent / '.env')
 
 import auth, models, schemas, database
 

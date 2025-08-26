@@ -10,14 +10,27 @@ def seed(username: str, email: str, password: str):
     db: Session = next(database.get_db())
     try:
         existing = db.query(models.User).filter(models.User.username == username).first()
-        if existing:
-            print("User already exists; skipping")
-            return
         hashed = auth.get_password_hash(password)
-        user = models.User(username=username, email=email, hashed_password=hashed, role='admin', approved=True)
-        db.add(user)
-        db.commit()
-        print(f"Admin user '{username}' created.")
+        if existing:
+            existing.approved = True
+            existing.email_verified = True
+            existing.hashed_password = hashed
+            if email and existing.email != email:
+                existing.email = email
+            db.commit()
+            print(f"Admin user '{username}' updated (approved + email_verified).")
+        else:
+            user = models.User(
+                username=username,
+                email=email,
+                hashed_password=hashed,
+                role='admin',
+                approved=True,
+                email_verified=True,
+            )
+            db.add(user)
+            db.commit()
+            print(f"Admin user '{username}' created.")
     finally:
         db.close()
 
