@@ -7,6 +7,7 @@ import os, uuid, shutil, secrets, time
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from pathlib import Path
+import re
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 import logging
@@ -51,7 +52,14 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(database.get_d
     if pw_errors:
         raise HTTPException(status_code=400, detail=f"Weak password, need: {', '.join(pw_errors)}")
     hashed_password = auth.get_password_hash(user.password)
-    db_user = models.User(username=user.username, email=user.email, hashed_password=hashed_password, role=user.role, approved=False)
+    # Auto-approve admins; regular users require approval
+    db_user = models.User(
+        username=user.username,
+        email=user.email,
+        hashed_password=hashed_password,
+        role=user.role,
+        approved=(user.role == 'admin')
+    )
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
@@ -196,16 +204,20 @@ def send_email_verification_login(payload: schemas.EmailVerificationAuthRequest,
     return {"detail": "Verification email generated", "token": user.email_verification_token}
 
 @app.post('/email/verify')
-def verify_email(payload: schemas.EmailVerificationRequest, current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(database.get_db)):
-    if current_user.email_verified:
-        return {"detail": "Already verified"}
-    if payload.token != current_user.email_verification_token:
+def verify_email(payload: schemas.EmailVerificationRequest, db: Session = Depends(database.get_db), request: Request = None):
+    # Optional: rate limit verification attempts per IP
+    if request and request.client:
+        _rate_limit(db, VERIFY_SCOPE, f"{request.client.host}:verify")
+    user = db.query(models.User).filter(models.User.email_verification_token == payload.token).first()
+    if not user:
         raise HTTPException(status_code=400, detail='Invalid token')
-    if not current_user.email_verification_sent_at or current_user.email_verification_sent_at + timedelta(hours=EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS) < datetime.utcnow():
+    if user.email_verified:
+        return {"detail": "Already verified"}
+    if not user.email_verification_sent_at or user.email_verification_sent_at + timedelta(hours=EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS) < datetime.utcnow():
         raise HTTPException(status_code=400, detail='Verification token expired, request a new one')
-    current_user.email_verified = True
-    current_user.email_verification_token = None
-    current_user.email_verification_sent_at = None
+    user.email_verified = True
+    user.email_verification_token = None
+    user.email_verification_sent_at = None
     db.commit()
     return {"detail": "Email verified"}
 
@@ -570,15 +582,18 @@ def delete_post(
     post = db.query(models.Post).filter(models.Post.id == post_id).first()
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
-    # Attempt to delete image file if local and in uploads
-    if post.image and post.image.startswith('/uploads/'):
-        fname = post.image.split('/uploads/')[-1]
-        fpath = os.path.join(UPLOAD_DIR, fname)
-        if os.path.isfile(fpath):
-            try:
-                os.remove(fpath)
-            except OSError:
-                pass
+    # Attempt to delete image file(s) if local and in uploads
+    if post.image:
+        parts = [p.strip() for p in re.split(r"[;,\s]+", post.image) if p and p.strip()]
+        for p in parts:
+            if p.startswith('/uploads/'):
+                fname = p.split('/uploads/')[-1]
+                fpath = os.path.join(UPLOAD_DIR, fname)
+                if os.path.isfile(fpath):
+                    try:
+                        os.remove(fpath)
+                    except OSError:
+                        pass
     db.delete(post)
     db.commit()
     return {"detail": "Post deleted"}

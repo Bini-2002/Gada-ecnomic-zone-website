@@ -118,20 +118,20 @@ export async function listUsers({ skip = 0, limit = 50, search } = {}, token) {
   if (skip) params.append('skip', skip);
   if (limit) params.append('limit', limit);
   if (search) params.append('search', search);
-  const res = await fetch('http://localhost:8000/users' + (params.toString() ? `?${params}` : ''), { headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
+  const res = await fetch(`${API_BASE}/users` + (params.toString() ? `?${params}` : ''), { headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
   if (!res.ok) throw new Error('Failed to load users');
   return res.json(); // { total, items }
 }
 
 export async function updateUserRole(userId, role, token) {
-  const res = await fetch(`http://localhost:8000/users/${userId}/role?role=${encodeURIComponent(role)}`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
+  const res = await fetch(`${API_BASE}/users/${userId}/role?role=${encodeURIComponent(role)}`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
   const data = await res.json();
   if (!res.ok) throw new Error(data.detail || 'Failed to update role');
   return data;
 }
 
 export async function deleteUser(userId, token) {
-  const res = await fetch(`http://localhost:8000/users/${userId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
+  const res = await fetch(`${API_BASE}/users/${userId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
   if (!res.ok) { const data = await res.json(); throw new Error(data.detail || 'Failed to delete user'); }
   return true;
 }
@@ -184,5 +184,12 @@ export async function backfillPostStatus(token) {
   const res = await fetch(`${API_BASE}/tasks/backfill-post-status`, { method:'POST', headers:{ Authorization:`Bearer ${token}` }, credentials:'include' });
   const data = await res.json();
   if (!res.ok) throw new Error(data.detail || 'Failed to backfill');
+  return data;
+}
+
+export async function getPost(id) {
+  const res = await fetch(`${API_BASE}/posts/${id}`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || 'Failed to load post');
   return data;
 }

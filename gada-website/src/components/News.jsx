@@ -1,8 +1,16 @@
 import React, { useState, useEffect } from "react";
 import "../News.css";
 import { getPosts } from "../api";
+import { API_BASE } from "../config";
 
-function NewsCard({ title, details, date, image }) {
+function resolveImageUrl(img) {
+  if (!img) return img;
+  // Uploaded images are served from backend /uploads; prefix with API_BASE for absolute URL
+  if (typeof img === 'string' && img.startsWith('/uploads/')) return `${API_BASE}${img}`;
+  return img;
+}
+
+function NewsCard({ id, title, details, date, image }) {
   const [showMore, setShowMore] = useState(false);
   const maxLen = 220;
   const isLong = details.length > maxLen;
@@ -17,9 +25,10 @@ function NewsCard({ title, details, date, image }) {
       firstImage = image.split(' ')[0].trim();
     }
   }
+  const src = resolveImageUrl(firstImage);
   return (
-    <div className="news-card">
-      <img src={firstImage} alt={title} className="news-card-img" />
+  <div className="news-card" onClick={() => { window.location.hash = `#news/${id}`; }} style={{cursor:'pointer'}}>
+      <img src={src} alt={title} className="news-card-img" />
       <div className="news-card-content">
         <h3 className="news-card-title">{title}</h3>
         <div className="news-card-date">{date}</div>

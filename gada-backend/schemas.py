@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import datetime
 
 # ----- User Schemas -----
 class UserCreate(BaseModel):
@@ -13,8 +14,8 @@ class User(BaseModel):
     email: str
     role: str
     approved: bool | None = None
-    created_at: str | None = None
-    updated_at: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
     email_verified: bool | None = None
 
     model_config = {"from_attributes": True}
@@ -34,9 +35,9 @@ class Post(BaseModel):
     date: str
     details: str
     image: str
-    created_at: str
+    created_at: datetime
     status: str
-    publish_at: str | None = None
+    publish_at: datetime | None = None
 
     model_config = {"from_attributes": True}
 

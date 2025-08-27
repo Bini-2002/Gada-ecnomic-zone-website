@@ -1,23 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { createPost, getPosts, updatePost, listUsers, updateUserRole, deleteUser, uploadImage, approveUser, changePassword } from "../api";
+import { createPost, getPosts, updatePost, listUsers, updateUserRole, deleteUser, uploadImage, approveUser, changePassword, deletePost } from "../api";
 import { runPublishScheduled, backfillPostStatus } from "../api";
 import "../AdminDashboard.css";
 
-// Import newsData from News.jsx
+// Import newsData from News.jsx (if needed elsewhere)
 import { newsData } from "./News.jsx";
+import { API_BASE } from "../config";
 
-const dummyRegistrations = [
-  { id: 1, name: "John Doe", email: "john@example.com", status: "pending" },
-  { id: 2, name: "Jane Smith", email: "jane@example.com", status: "pending" },
-];
+function resolveImageUrl(img){
+  if (!img) return img;
+  if (typeof img === 'string' && img.startsWith('/uploads/')) return `${API_BASE}${img}`;
+  return img;
+}
 
 export default function AdminDashboard() {
-  const [registrations, setRegistrations] = useState(dummyRegistrations);
   const [postTitle, setPostTitle] = useState("");
   const [postDate, setPostDate] = useState("");
   const [postDetails, setPostDetails] = useState("");
-  const [postImage, setPostImage] = useState("");
-  const [imagePreview, setImagePreview] = useState("");
+  const [postImage, setPostImage] = useState(""); // comma-separated URLs
   const [localPosts, setLocalPosts] = useState([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
   const [error, setError] = useState(null);
@@ -33,6 +33,8 @@ export default function AdminDashboard() {
   const [editDate, setEditDate] = useState("");
   const [editDetails, setEditDetails] = useState("");
   const [editImage, setEditImage] = useState("");
+  const [editStatus, setEditStatus] = useState('draft');
+  const [editPublishAt, setEditPublishAt] = useState('');
   const [savingEdit, setSavingEdit] = useState(false);
   const [passwordOld, setPasswordOld] = useState("");
   const [passwordNew, setPasswordNew] = useState("");
@@ -81,30 +83,22 @@ export default function AdminDashboard() {
     return () => { active = false; };
   }, [userSearch]);
 
-  // Approve registration (dummy, replace with backend call if needed)
-  const approveRegistration = (id) => {
-    setRegistrations((regs) =>
-      regs.map((reg) =>
-        reg.id === id ? { ...reg, status: "approved" } : reg
-      )
-    );
-  };
+  // Derived list of pending registrations from fetched users
+  const pendingRegistrations = users.filter(u => !u.approved);
 
   const handleImageChange = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImagePreview(URL.createObjectURL(file));
-      try {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) { setPostImage(""); return; }
+    try {
+      const urls = [];
+      for (const file of files) {
         const uploaded = await uploadImage(file, token);
-        setPostImage(uploaded.url); // store URL path
-      } catch (err) {
-        alert('Image upload failed: ' + err.message);
-        setPostImage('');
-        setImagePreview('');
+        urls.push(uploaded.url);
       }
-    } else {
-      setPostImage("");
-      setImagePreview("");
+      setPostImage(urls.join(','));
+    } catch (err) {
+      alert('Image upload failed: ' + err.message);
+      setPostImage('');
     }
   };
 
@@ -128,8 +122,7 @@ export default function AdminDashboard() {
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this post?')) return;
     try {
-      const res = await fetch(`http://localhost:8000/posts/${id}`, { method:'DELETE', headers:{ Authorization:`Bearer ${token}` } });
-      if (!res.ok) { const data = await res.json(); throw new Error(data.detail || 'Delete failed'); }
+      await deletePost(id, token);
       setLocalPosts(p => p.filter(post => post.id !== id));
       setPostsTotal(t=>t-1);
     } catch (e) { alert(e.message); }
@@ -178,11 +171,16 @@ export default function AdminDashboard() {
   };
   const closeEditModal = () => { if (!savingEdit) setEditModalOpen(false); };
   const handleEditImageChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
     try {
-      const uploaded = await uploadImage(file, token);
-      setEditImage(uploaded.url);
+      const urls = [];
+      for (const file of files) {
+        const uploaded = await uploadImage(file, token);
+        urls.push(uploaded.url);
+      }
+      const existing = editImage ? editImage.split(/[;,\s]+/).filter(Boolean) : [];
+      setEditImage([...existing, ...urls].join(','));
     } catch (err) {
       alert('Image upload failed: ' + err.message);
     }
@@ -212,21 +210,21 @@ export default function AdminDashboard() {
         <table className="admin-table">
           <thead>
             <tr>
-              <th>Name</th>
+              <th>Username</th>
               <th>Email</th>
               <th>Status</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            {registrations.map((reg) => (
-              <tr key={reg.id} className={reg.status === "approved" ? "approved" : "pending"}>
-                <td>{reg.name}</td>
-                <td>{reg.email}</td>
-                <td>{reg.status}</td>
+            {pendingRegistrations.map((u) => (
+              <tr key={u.id} className={!u.approved ? "pending" : "approved"}>
+                <td>{u.username}</td>
+                <td>{u.email}</td>
+                <td>{u.approved ? 'approved' : 'pending'}</td>
                 <td>
-                  {reg.status === "pending" ? (
-                    <button className="approve-btn" onClick={() => approveRegistration(reg.id)}>
+                  {!u.approved ? (
+                    <button className="approve-btn" onClick={() => handleApproveChange(u.id, true)}>
                       Approve
                     </button>
                   ) : (
@@ -291,12 +289,17 @@ export default function AdminDashboard() {
             id="news-image-input"
             type="file"
             accept="image/*"
+            multiple
             onChange={handleImageChange}
             className="post-input"
             required
           />
-          {imagePreview && (
-            <img src={imagePreview} alt="Preview" style={{maxWidth:'180px',marginTop:'0.5rem',borderRadius:'0.5rem',border:'2px solid #e53935'}} />
+          {postImage && (
+            <div style={{display:'flex', gap:'0.4rem', flexWrap:'wrap', marginTop:'0.5rem'}}>
+              {postImage.split(/[;,\s]+/).filter(Boolean).map((u,i)=> (
+                <img key={i} src={resolveImageUrl(u)} alt={`preview-${i}`} style={{maxWidth:'120px', borderRadius:'0.5rem', border:'2px solid #e53935'}} />
+              ))}
+            </div>
           )}
           <select value={postStatus} onChange={e=>setPostStatus(e.target.value)} className="post-input" required>
             <option value="draft">Draft</option>
@@ -324,7 +327,7 @@ export default function AdminDashboard() {
                 </select>
               </div>
               <p>{post.details}</p>
-              {post.image && <img src={post.image} alt={post.title} style={{maxWidth:'100%',marginTop:'0.5rem',borderRadius:'0.5rem'}} />}
+              {post.image && <img src={resolveImageUrl(post.image)} alt={post.title} style={{maxWidth:'100%',marginTop:'0.5rem',borderRadius:'0.5rem'}} />}
               <div style={{marginTop:'0.5rem',display:'flex',gap:'0.5rem'}}>
                 <button type="button" onClick={() => handleUpdate(post.id)} className="approve-btn" style={{background:'#1976d2'}}>Edit</button>
                 <button type="button" onClick={() => handleDelete(post.id)} className="approve-btn" style={{background:'#d32f2f'}}>Delete</button>
@@ -417,7 +420,7 @@ export default function AdminDashboard() {
               <input className="post-input" type="date" value={editDate} onChange={e=>setEditDate(e.target.value)} required />
               <textarea className="post-textarea" value={editDetails} onChange={e=>setEditDetails(e.target.value)} required />
               <input type="file" accept="image/*" onChange={handleEditImageChange} />
-              {editImage && <img src={editImage} alt="preview" style={{maxWidth:'160px', marginTop:'0.5rem', borderRadius:'0.5rem'}} />}
+              {editImage && <img src={resolveImageUrl(editImage)} alt="preview" style={{maxWidth:'160px', marginTop:'0.5rem', borderRadius:'0.5rem'}} />}
               <select className="post-input" value={editStatus} onChange={e=>setEditStatus(e.target.value)}>
                 <option value="draft">Draft</option>
                 <option value="published">Published</option>
