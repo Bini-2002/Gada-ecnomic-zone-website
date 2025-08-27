@@ -94,3 +94,23 @@ class PasswordResetPerform(BaseModel):
     token: str
     new_password: str
 
+# ----- Comments & Likes -----
+class CommentCreate(BaseModel):
+    content: str
+
+class Comment(BaseModel):
+    id: int
+    post_id: int
+    user_id: int
+    content: str
+    created_at: datetime
+    model_config = {"from_attributes": True}
+
+class CommentList(BaseModel):
+    total: int
+    items: list[Comment]
+
+class LikeStatus(BaseModel):
+    liked: bool
+    likes_count: int
+

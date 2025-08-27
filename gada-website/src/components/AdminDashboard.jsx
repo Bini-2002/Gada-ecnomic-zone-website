@@ -327,7 +327,10 @@ export default function AdminDashboard() {
                 </select>
               </div>
               <p>{post.details}</p>
-              {post.image && <img src={resolveImageUrl(post.image)} alt={post.title} style={{maxWidth:'100%',marginTop:'0.5rem',borderRadius:'0.5rem'}} />}
+              {post.image && (() => {
+                const first = typeof post.image === 'string' ? (post.image.split(/[;,\s]+/).filter(Boolean)[0] || '') : post.image;
+                return first ? <img src={resolveImageUrl(first)} alt={post.title} style={{maxWidth:'100%',marginTop:'0.5rem',borderRadius:'0.5rem'}} /> : null;
+              })()}
               <div style={{marginTop:'0.5rem',display:'flex',gap:'0.5rem'}}>
                 <button type="button" onClick={() => handleUpdate(post.id)} className="approve-btn" style={{background:'#1976d2'}}>Edit</button>
                 <button type="button" onClick={() => handleDelete(post.id)} className="approve-btn" style={{background:'#d32f2f'}}>Delete</button>

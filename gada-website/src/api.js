@@ -193,3 +193,44 @@ export async function getPost(id) {
   if (!res.ok) throw new Error(data.detail || 'Failed to load post');
   return data;
 }
+
+export async function listComments(postId, { skip = 0, limit = 50 } = {}) {
+  const params = new URLSearchParams();
+  if (skip) params.append('skip', skip);
+  if (limit) params.append('limit', limit);
+  const res = await authFetch(`${API_BASE}/posts/${postId}/comments` + (params.toString() ? `?${params}` : ''));
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || 'Failed to load comments');
+  return data;
+}
+
+export async function addComment(postId, content) {
+  const res = await authFetch(`${API_BASE}/posts/${postId}/comments`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || 'Failed to add comment');
+  return data;
+}
+
+export async function deleteCommentApi(postId, commentId) {
+  const res = await authFetch(`${API_BASE}/posts/${postId}/comments/${commentId}`, { method: 'DELETE' });
+  if (!res.ok) { const data = await res.json(); throw new Error(data.detail || 'Failed to delete comment'); }
+  return true;
+}
+
+export async function getLikeStatus(postId) {
+  const res = await authFetch(`${API_BASE}/posts/${postId}/likes`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || 'Failed to get like status');
+  return data; // { liked, likes_count }
+}
+
+export async function toggleLike(postId) {
+  const res = await authFetch(`${API_BASE}/posts/${postId}/likes/toggle`, { method: 'POST' });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || 'Failed to toggle like');
+  return data;
+}

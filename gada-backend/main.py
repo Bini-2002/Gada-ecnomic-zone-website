@@ -520,6 +520,68 @@ def get_post(post_id: int, db: Session = Depends(database.get_db)):
         raise HTTPException(status_code=404, detail="Post not found")
     return post
 
+@app.get("/posts/{post_id}/comments", response_model=schemas.CommentList)
+def list_comments(post_id: int, db: Session = Depends(database.get_db), skip: int = 0, limit: int = 50):
+    q = db.query(models.Comment).filter(models.Comment.post_id == post_id)
+    total = q.count()
+    items = q.order_by(models.Comment.id.asc()).offset(skip).limit(min(limit, 200)).all()
+    return {"total": total, "items": items}
+
+@app.post("/posts/{post_id}/comments", response_model=schemas.Comment)
+def add_comment(post_id: int, payload: schemas.CommentCreate, db: Session = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_user)):
+    # Ensure post exists and is visible (published) for non-admins
+    post = db.query(models.Post).filter(models.Post.id == post_id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail='Post not found')
+    if current_user.role != 'admin':
+        from datetime import datetime
+        now = datetime.utcnow()
+        if not (post.status == 'published' and (post.publish_at is None or post.publish_at <= now)):
+            raise HTTPException(status_code=403, detail='Cannot comment on unpublished post')
+    if not payload.content or not payload.content.strip():
+        raise HTTPException(status_code=400, detail='Content required')
+    comment = models.Comment(post_id=post_id, user_id=current_user.id, content=payload.content.strip())
+    db.add(comment)
+    db.commit()
+    db.refresh(comment)
+    return comment
+
+@app.delete("/posts/{post_id}/comments/{comment_id}")
+def delete_comment(post_id: int, comment_id: int, db: Session = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_user)):
+    c = db.query(models.Comment).filter(models.Comment.id == comment_id, models.Comment.post_id == post_id).first()
+    if not c:
+        raise HTTPException(status_code=404, detail='Comment not found')
+    if current_user.role != 'admin' and c.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail='Forbidden')
+    db.delete(c)
+    db.commit()
+    return {"detail": "Comment deleted"}
+
+@app.get("/posts/{post_id}/likes", response_model=schemas.LikeStatus)
+def like_status(post_id: int, db: Session = Depends(database.get_db), current_user: models.User | None = Depends(auth.get_current_user_optional)):
+    likes_count = db.query(models.PostLike).filter(models.PostLike.post_id == post_id).count()
+    liked = False
+    if current_user:
+        liked = db.query(models.PostLike).filter(models.PostLike.post_id == post_id, models.PostLike.user_id == current_user.id).first() is not None
+    return {"liked": liked, "likes_count": likes_count}
+
+@app.post("/posts/{post_id}/likes/toggle", response_model=schemas.LikeStatus)
+def toggle_like(post_id: int, db: Session = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_user)):
+    existing = db.query(models.PostLike).filter(models.PostLike.post_id == post_id, models.PostLike.user_id == current_user.id).first()
+    if existing:
+        db.delete(existing)
+        db.commit()
+    else:
+        like = models.PostLike(post_id=post_id, user_id=current_user.id)
+        try:
+            db.add(like)
+            db.commit()
+        except Exception:
+            db.rollback()
+    likes_count = db.query(models.PostLike).filter(models.PostLike.post_id == post_id).count()
+    liked = db.query(models.PostLike).filter(models.PostLike.post_id == post_id, models.PostLike.user_id == current_user.id).first() is not None
+    return {"liked": liked, "likes_count": likes_count}
+
 @app.put("/posts/{post_id}", response_model=schemas.Post)
 def update_post(
     post_id: int,

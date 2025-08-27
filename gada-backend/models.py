@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
 import datetime
 
@@ -30,6 +30,24 @@ class Post(Base):
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     status = Column(String, default='draft', nullable=False)  # draft | scheduled | published
     publish_at = Column(DateTime, nullable=True)  # when scheduled to go live
+
+class Comment(Base):
+    __tablename__ = "comments"
+    id = Column(Integer, primary_key=True, index=True)
+    post_id = Column(Integer, index=True)
+    user_id = Column(Integer, index=True)
+    content = Column(String)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class PostLike(Base):
+    __tablename__ = "post_likes"
+    id = Column(Integer, primary_key=True, index=True)
+    post_id = Column(Integer, index=True)
+    user_id = Column(Integer, index=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    __table_args__ = (
+        UniqueConstraint('post_id', 'user_id', name='uq_post_like_user'),
+    )
 
 class RefreshToken(Base):
     __tablename__ = "refresh_tokens"
