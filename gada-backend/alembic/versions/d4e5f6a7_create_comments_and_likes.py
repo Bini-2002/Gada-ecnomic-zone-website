@@ -22,6 +22,8 @@ def table_exists(table_name: str) -> bool:
 
 
 def upgrade():
+    bind = op.get_bind()
+    inspector = sa.inspect(bind)
     if not table_exists('comments'):
         op.create_table(
             'comments',
@@ -31,7 +33,11 @@ def upgrade():
             sa.Column('content', sa.String(), nullable=False),
             sa.Column('created_at', sa.DateTime(), nullable=True),
         )
+    # create indexes if missing
+    existing_idx = {idx['name'] for idx in inspector.get_indexes('comments')} if table_exists('comments') else set()
+    if 'ix_comments_post_id' not in existing_idx and table_exists('comments'):
         op.create_index('ix_comments_post_id', 'comments', ['post_id'])
+    if 'ix_comments_user_id' not in existing_idx and table_exists('comments'):
         op.create_index('ix_comments_user_id', 'comments', ['user_id'])
 
     if not table_exists('post_likes'):
@@ -43,7 +49,10 @@ def upgrade():
             sa.Column('created_at', sa.DateTime(), nullable=True),
             sa.UniqueConstraint('post_id', 'user_id', name='uq_post_like_user')
         )
+    existing_idx2 = {idx['name'] for idx in inspector.get_indexes('post_likes')} if table_exists('post_likes') else set()
+    if 'ix_post_likes_post_id' not in existing_idx2 and table_exists('post_likes'):
         op.create_index('ix_post_likes_post_id', 'post_likes', ['post_id'])
+    if 'ix_post_likes_user_id' not in existing_idx2 and table_exists('post_likes'):
         op.create_index('ix_post_likes_user_id', 'post_likes', ['user_id'])
 
 
