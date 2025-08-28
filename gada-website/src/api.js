@@ -234,3 +234,14 @@ export async function toggleLike(postId) {
   if (!res.ok) throw new Error(data.detail || 'Failed to toggle like');
   return data;
 }
+
+export async function verifyEmail({ token, username, email }) {
+  const res = await fetch(`${API_BASE}/email/verify`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token, username, email })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || 'Verification failed');
+  return data; // { detail }
+}

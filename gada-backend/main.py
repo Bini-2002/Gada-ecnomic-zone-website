@@ -101,6 +101,32 @@ REFRESH_COOKIE_SECURE = False  # set True when using HTTPS
 EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS = 24
 PASSWORD_RESET_TOKEN_EXPIRE_HOURS = 24
 
+# --- Email (SMTP) configuration ---
+SMTP_HOST = os.getenv('SMTP_HOST')
+SMTP_PORT = int(os.getenv('SMTP_PORT', '587'))
+SMTP_USER = os.getenv('SMTP_USER')
+SMTP_PASS = os.getenv('SMTP_PASS')
+SMTP_FROM = os.getenv('SMTP_FROM', SMTP_USER or 'no-reply@example.com')
+
+def _send_email(to_email: str, subject: str, body: str):
+    if not SMTP_HOST or not SMTP_USER or not SMTP_PASS:
+        logger.warning("SMTP not configured; skipping email to %s: %s", to_email, subject)
+        return
+    import smtplib
+    from email.message import EmailMessage
+    msg = EmailMessage()
+    msg['Subject'] = subject
+    msg['From'] = SMTP_FROM
+    msg['To'] = to_email
+    msg.set_content(body)
+    try:
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+            server.starttls()
+            server.login(SMTP_USER, SMTP_PASS)
+            server.send_message(msg)
+    except Exception as e:
+        logger.error("Failed to send email: %s", e)
+
 @app.post("/token", response_model=schemas.AccessToken)
 def login_for_access_token(response: Response, form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(database.get_db), request: Request = None):
     client_ip = request.client.host if request and request.client else 'ip'
@@ -182,11 +208,17 @@ def send_email_verification(current_user: models.User = Depends(auth.get_current
         _rate_limit(db, VERIFY_SCOPE, f"{request.client.host}:{current_user.id}")
     if current_user.email_verified:
         return {"detail": "Already verified"}
-    current_user.email_verification_token = secrets.token_urlsafe(32)
+    # Generate a 6-digit code instead of a long token
+    current_user.email_verification_token = f"{secrets.randbelow(900000) + 100000}"
     current_user.email_verification_sent_at = datetime.utcnow()
     db.commit()
-    # Placeholder: In production, send email containing the token
-    return {"detail": "Verification email generated", "token": current_user.email_verification_token}
+    # Send email with code
+    _send_email(
+        to_email=current_user.email,
+        subject="Verify your email",
+        body=f"Your verification code is: {current_user.email_verification_token}\nIt expires in {EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS} hours."
+    )
+    return {"detail": "Verification email sent"}
 
 @app.post('/email/send-verification-login')
 def send_email_verification_login(payload: schemas.EmailVerificationAuthRequest, db: Session = Depends(database.get_db), request: Request = None):
@@ -198,17 +230,28 @@ def send_email_verification_login(payload: schemas.EmailVerificationAuthRequest,
         return {"detail": "Already verified"}
     if request and request.client:
         _rate_limit(db, VERIFY_SCOPE, f"{request.client.host}:{user.id}")
-    user.email_verification_token = secrets.token_urlsafe(32)
+    user.email_verification_token = f"{secrets.randbelow(900000) + 100000}"
     user.email_verification_sent_at = datetime.utcnow()
     db.commit()
-    return {"detail": "Verification email generated", "token": user.email_verification_token}
+    _send_email(
+        to_email=user.email,
+        subject="Verify your email",
+        body=f"Your verification code is: {user.email_verification_token}\nIt expires in {EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS} hours."
+    )
+    return {"detail": "Verification email sent"}
 
 @app.post('/email/verify')
 def verify_email(payload: schemas.EmailVerificationRequest, db: Session = Depends(database.get_db), request: Request = None):
     # Optional: rate limit verification attempts per IP
     if request and request.client:
         _rate_limit(db, VERIFY_SCOPE, f"{request.client.host}:verify")
-    user = db.query(models.User).filter(models.User.email_verification_token == payload.token).first()
+    # Optionally narrow by username/email to avoid matching a reused code across different users
+    query = db.query(models.User).filter(models.User.email_verification_token == payload.token)
+    if payload.username:
+        query = query.filter(models.User.username == payload.username)
+    if payload.email:
+        query = query.filter(models.User.email == payload.email)
+    user = query.first()
     if not user:
         raise HTTPException(status_code=400, detail='Invalid token')
     if user.email_verified:

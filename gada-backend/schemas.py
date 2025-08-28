@@ -81,7 +81,9 @@ class RefreshRequest(BaseModel):
     refresh_token: str
 
 class EmailVerificationRequest(BaseModel):
-    token: str
+    token: str  # used as verification code
+    username: str | None = None
+    email: str | None = None
 
 class EmailVerificationAuthRequest(BaseModel):
     username: str

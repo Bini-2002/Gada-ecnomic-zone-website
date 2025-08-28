@@ -18,6 +18,7 @@ import Investments from './components/Investments.jsx';
 import { ThemeContext } from './components/ThemeContext';
 import AdminDashboard from './components/AdminDashboard.jsx';
 import LoginRegisterPage from './components/LoginRegisterPage.jsx';
+import VerifyEmail from './components/VerifyEmail.jsx';
 
 function App() {
   const { isDarkMode } = useContext(ThemeContext);
@@ -113,6 +114,8 @@ function App() {
         }
       case '#log-in':
         return <LoginRegisterPage onLogin={handleLogin} />;
+      case '#verify-email':
+        return <VerifyEmail />;
       default:
         // Handle News detail route like #news/123
         if (currentView.startsWith('#news/')) {

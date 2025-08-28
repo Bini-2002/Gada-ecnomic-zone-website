@@ -9,7 +9,7 @@ async function resendVerification(username, password, setMessage) {
   });
   const data = await res.json();
   if (res.ok) {
-    setMessage('Verification email sent (token shown only in dev): ' + (data.token || '')); 
+    setMessage('Verification email sent. Check your inbox for the 6-digit code.'); 
   } else {
     setMessage(data.detail || 'Failed to send verification');
   }
@@ -92,6 +92,9 @@ export default function LoginRegisterPage({ onLogin }) {
       {isLogin && message.includes('Email not verified') && (
         <div style={{marginTop:12,textAlign:'center'}}>
           <button onClick={()=>resendVerification(username, password, setMessage)}>Resend Verification Email</button>
+          <div style={{marginTop:8}}>
+            <button className="switch-link" onClick={()=>{ window.location.hash = '#verify-email'; }}>Enter verification code</button>
+          </div>
         </div>
       )}
     </div>
