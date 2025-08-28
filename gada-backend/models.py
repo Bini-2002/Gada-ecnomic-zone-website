@@ -30,6 +30,8 @@ class Post(Base):
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     status = Column(String, default='draft', nullable=False)  # draft | scheduled | published
     publish_at = Column(DateTime, nullable=True)  # when scheduled to go live
+    likes_count = Column(Integer, default=0)
+    comments_count = Column(Integer, default=0)
 
 class Comment(Base):
     __tablename__ = "comments"

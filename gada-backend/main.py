@@ -585,6 +585,8 @@ def add_comment(post_id: int, payload: schemas.CommentCreate, db: Session = Depe
         raise HTTPException(status_code=400, detail='Content required')
     comment = models.Comment(post_id=post_id, user_id=current_user.id, content=payload.content.strip())
     db.add(comment)
+    # increment post.comments_count
+    post.comments_count = (post.comments_count or 0) + 1
     db.commit()
     db.refresh(comment)
     return comment
@@ -597,6 +599,10 @@ def delete_comment(post_id: int, comment_id: int, db: Session = Depends(database
     if current_user.role != 'admin' and c.user_id != current_user.id:
         raise HTTPException(status_code=403, detail='Forbidden')
     db.delete(c)
+    # decrement post.comments_count (not below 0)
+    post = db.query(models.Post).filter(models.Post.id == post_id).first()
+    if post and (post.comments_count or 0) > 0:
+        post.comments_count = post.comments_count - 1
     db.commit()
     return {"detail": "Comment deleted"}
 
@@ -613,17 +619,26 @@ def toggle_like(post_id: int, db: Session = Depends(database.get_db), current_us
     existing = db.query(models.PostLike).filter(models.PostLike.post_id == post_id, models.PostLike.user_id == current_user.id).first()
     if existing:
         db.delete(existing)
+        # decrement
+        post = db.query(models.Post).filter(models.Post.id == post_id).first()
+        if post and (post.likes_count or 0) > 0:
+            post.likes_count = post.likes_count - 1
         db.commit()
     else:
         like = models.PostLike(post_id=post_id, user_id=current_user.id)
         try:
             db.add(like)
+            # increment
+            post = db.query(models.Post).filter(models.Post.id == post_id).first()
+            if post:
+                post.likes_count = (post.likes_count or 0) + 1
             db.commit()
         except Exception:
             db.rollback()
-    likes_count = db.query(models.PostLike).filter(models.PostLike.post_id == post_id).count()
+    post = db.query(models.Post).filter(models.Post.id == post_id).first()
+    likes_count = post.likes_count if post and post.likes_count is not None else db.query(models.PostLike).filter(models.PostLike.post_id == post_id).count()
     liked = db.query(models.PostLike).filter(models.PostLike.post_id == post_id, models.PostLike.user_id == current_user.id).first() is not None
-    return {"liked": liked, "likes_count": likes_count}
+    return {"liked": liked, "likes_count": int(likes_count)}
 
 @app.put("/posts/{post_id}", response_model=schemas.Post)
 def update_post(

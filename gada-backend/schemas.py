@@ -38,6 +38,8 @@ class Post(BaseModel):
     created_at: datetime
     status: str
     publish_at: datetime | None = None
+    likes_count: int | None = 0
+    comments_count: int | None = 0
 
     model_config = {"from_attributes": True}
 
