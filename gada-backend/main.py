@@ -218,7 +218,11 @@ def send_email_verification(current_user: models.User = Depends(auth.get_current
         subject="Verify your email",
         body=f"Your verification code is: {current_user.email_verification_token}\nIt expires in {EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS} hours."
     )
-    return {"detail": "Verification email sent"}
+    resp = {"detail": "Verification email sent"}
+    # In local dev without SMTP configured, expose code to unblock testing
+    if not SMTP_HOST or not SMTP_USER or not SMTP_PASS:
+        resp["dev_code"] = current_user.email_verification_token
+    return resp
 
 @app.post('/email/send-verification-login')
 def send_email_verification_login(payload: schemas.EmailVerificationAuthRequest, db: Session = Depends(database.get_db), request: Request = None):
@@ -238,7 +242,10 @@ def send_email_verification_login(payload: schemas.EmailVerificationAuthRequest,
         subject="Verify your email",
         body=f"Your verification code is: {user.email_verification_token}\nIt expires in {EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS} hours."
     )
-    return {"detail": "Verification email sent"}
+    resp = {"detail": "Verification email sent"}
+    if not SMTP_HOST or not SMTP_USER or not SMTP_PASS:
+        resp["dev_code"] = user.email_verification_token
+    return resp
 
 @app.post('/email/verify')
 def verify_email(payload: schemas.EmailVerificationRequest, db: Session = Depends(database.get_db), request: Request = None):

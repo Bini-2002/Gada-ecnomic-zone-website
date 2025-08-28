@@ -3,6 +3,7 @@
   margin: 40px auto;
   padding: 32px 24px 24px 24px;
   background: #fff;
+  color: #111; /* ensure text like “Already have an account?” is visible on white card */
   border-radius: 12px;
   box-shadow: 0 2px 16px #0002;
   border: 2px solid #e53935;
