@@ -26,6 +26,10 @@
   --card-text-color: #222;
   --button-bg: var(--accent-color);
   --button-text-color: #ffffff;
+  /* Semantic accents */
+  --danger-bg: #e53935;
+  --danger-bg-hover: #b71c1c;
+  --danger-border: #d32f2f;
 }
 
 [data-theme='dark'] {
@@ -54,6 +58,10 @@
   --card-text-color: #f0f0f0;
   --button-bg: var(--accent-color);
   --button-text-color: #ffffff;
+  /* Semantic accents */
+  --danger-bg: #e53935;
+  --danger-bg-hover: #d32f2f;
+  --danger-border: #a62828;
 }
 
 /* General Styles */

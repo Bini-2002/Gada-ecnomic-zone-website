@@ -138,7 +138,7 @@ export default function NavBar({ userRole, onLogout }) {
               {hasValidToken ? (
                 <button onClick={handleLogout} className="nav-link-item" style={{ background:'none', border:'none', cursor:'pointer', padding:0 }}>Logout</button>
               ) : (
-                <a href="#log-in" className="nav-link-item">Log in </a>
+                <a href="#log-in" className="nav-link-item">Log in / Sign up </a>
               )}
             </div>
           )}
@@ -183,6 +183,19 @@ export default function NavBar({ userRole, onLogout }) {
         <button onClick={toggleTheme} className="theme-switcher" aria-label="Toggle theme">
           <i className={isDarkMode ? 'fi fi-rr-sun' : 'fi fi-rr-moon'}></i>
         </button>
+
+        {/* Always-visible auth control on the right side */}
+        {hasValidToken ? (
+          <button
+            onClick={handleLogout}
+            aria-label="Logout"
+            className="logout-button"
+          >
+            Logout
+          </button>
+        ) : (
+          <a href="#log-in" className="nav-link-item" style={{ marginLeft: 8 }}>Log in / Sign up</a>
+        )}
       </div>
 
       <button className="hamburger" onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Toggle menu">

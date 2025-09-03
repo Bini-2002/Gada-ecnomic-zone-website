@@ -1,13 +1,13 @@
 .admin-dashboard {
-  background: #fff;
-  color: #111;
+  background: var(--background-color);
+  color: var(--text-color);
   min-height: 100vh;
   padding: 2.5rem 1rem 3rem 1rem;
   font-family: 'Roboto', sans-serif;
 }
 
 .admin-title {
-  color: #e53935;
+  color: var(--danger-bg);
   text-align: center;
   font-size: 2.7rem;
   font-weight: 900;
@@ -16,17 +16,17 @@
 }
 
 .admin-section {
-  background: #fff;
+  background: var(--card-bg);
   border-radius: 1.2rem;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+  box-shadow: var(--box-shadow);
   margin: 2rem auto 2.5rem auto;
   max-width: 700px;
   padding: 2rem 2.5rem 2rem 2.5rem;
-  border: 2px solid #e53935;
+  border: 2px solid var(--danger-border);
 }
 
 .admin-section h2 {
-  color: #e53935;
+  color: var(--danger-bg);
   font-size: 1.4rem;
   font-weight: 700;
   margin-bottom: 1.2rem;
@@ -38,25 +38,25 @@
   margin-bottom: 1.5rem;
 }
 .admin-table th, .admin-table td {
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border-color);
   padding: 0.7rem 0.5rem;
   text-align: left;
 }
 .admin-table th {
-  background: #111;
-  color: #fff;
+  background: var(--logo-title-bg);
+  color: var(--text-color);
   font-weight: 700;
 }
 .admin-table tr.approved {
-  background: #f8f8f8;
+  background: rgba(76, 175, 80, 0.06);
 }
 .admin-table tr.pending {
-  background: #fff3f3;
+  background: rgba(229, 57, 53, 0.08);
 }
 .approve-btn {
-  background: #e53935;
-  color: #fff;
-  border: none;
+  background: var(--danger-bg);
+  color: var(--button-text-color);
+  border: 1px solid var(--danger-border);
   border-radius: 0.5rem;
   padding: 0.4rem 1.1rem;
   font-weight: 700;
@@ -64,7 +64,7 @@
   transition: background 0.2s;
 }
 .approve-btn:hover {
-  background: #b71c1c;
+  background: var(--danger-bg-hover);
 }
 .approved-label {
   color: #43a047;
@@ -79,23 +79,27 @@
 }
 .post-input {
   padding: 0.7rem 1rem;
-  border: 1.5px solid #111;
+  border: 1.5px solid var(--border-color);
   border-radius: 0.5rem;
   font-size: 1.1rem;
   font-weight: 500;
+  background: var(--card-bg);
+  color: var(--text-color);
 }
 .post-textarea {
   min-height: 90px;
   padding: 0.7rem 1rem;
-  border: 1.5px solid #111;
+  border: 1.5px solid var(--border-color);
   border-radius: 0.5rem;
   font-size: 1.1rem;
   font-family: inherit;
+  background: var(--card-bg);
+  color: var(--text-color);
 }
 .create-post-btn {
-  background: #e53935;
-  color: #fff;
-  border: none;
+  background: var(--danger-bg);
+  color: var(--button-text-color);
+  border: 1px solid var(--danger-border);
   border-radius: 0.5rem;
   padding: 0.7rem 1.5rem;
   font-weight: 700;
@@ -105,7 +109,7 @@
   transition: background 0.2s;
 }
 .create-post-btn:hover {
-  background: #b71c1c;
+  background: var(--danger-bg-hover);
 }
 .posts-list {
   display: flex;
@@ -113,20 +117,20 @@
   gap: 1.2rem;
 }
 .post-card {
-  background: #fff;
-  border-left: 6px solid #e53935;
+  background: var(--card-bg);
+  border-left: 6px solid var(--danger-border);
   border-radius: 0.7rem;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  box-shadow: var(--box-shadow);
   padding: 1.1rem 1.3rem 1.1rem 1.5rem;
 }
 .post-card h3 {
-  color: #111;
+  color: var(--card-text-color);
   margin: 0 0 0.3rem 0;
   font-size: 1.2rem;
   font-weight: 800;
 }
 .post-date {
-  color: #e53935;
+  color: var(--danger-bg);
   font-size: 0.95rem;
   margin-bottom: 0.7rem;
   font-weight: 600;

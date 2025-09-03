@@ -253,6 +253,31 @@ body {
   transform: scale(1.2);
 }
 
+/* Logout button (always visible) */
+.logout-button {
+  margin-left: 8px;
+  background: var(--danger-bg);
+  color: #fff;
+  border: 1px solid var(--danger-border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  transition: background 0.2s ease, transform 0.05s ease, box-shadow 0.2s ease;
+}
+.logout-button:hover {
+  background: var(--danger-bg-hover);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.18);
+}
+.logout-button:active {
+  transform: translateY(1px);
+}
+.logout-button:focus-visible {
+  outline: 2px solid var(--danger-bg-hover);
+  outline-offset: 2px;
+}
+
 /* Dropdown Menu Styles */
 .nav-dropdown-menu-bar {
   position: relative;

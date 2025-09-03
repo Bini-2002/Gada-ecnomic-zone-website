@@ -107,6 +107,7 @@ SMTP_PORT = int(os.getenv('SMTP_PORT', '587'))
 SMTP_USER = os.getenv('SMTP_USER')
 SMTP_PASS = os.getenv('SMTP_PASS')
 SMTP_FROM = os.getenv('SMTP_FROM', SMTP_USER or 'no-reply@example.com')
+SMTP_SSL = os.getenv('SMTP_SSL', '0') == '1'  # if 1, use SMTPS (port 465)
 
 def _send_email(to_email: str, subject: str, body: str):
     if not SMTP_HOST or not SMTP_USER or not SMTP_PASS:
@@ -120,10 +121,22 @@ def _send_email(to_email: str, subject: str, body: str):
     msg['To'] = to_email
     msg.set_content(body)
     try:
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
-            server.starttls()
-            server.login(SMTP_USER, SMTP_PASS)
-            server.send_message(msg)
+        if SMTP_SSL:
+            with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=20) as server:
+                server.login(SMTP_USER, SMTP_PASS)
+                server.send_message(msg)
+        else:
+            with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=20) as server:
+                server.ehlo()
+                try:
+                    server.starttls()
+                    server.ehlo()
+                except smtplib.SMTPException:
+                    # If STARTTLS not supported, continue without TLS (some local dev servers)
+                    pass
+                server.login(SMTP_USER, SMTP_PASS)
+                server.send_message(msg)
+        logger.info("Sent email to %s: %s", to_email, subject)
     except Exception as e:
         logger.error("Failed to send email: %s", e)
 
