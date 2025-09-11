@@ -19,6 +19,7 @@ import { ThemeContext } from './components/ThemeContext';
 import AdminDashboard from './components/AdminDashboard.jsx';
 import LoginRegisterPage from './components/LoginRegisterPage.jsx';
 import VerifyEmail from './components/VerifyEmail.jsx';
+import InvestmentProposalPortal from './components/InvestmentProposalPortal.jsx';
 
 function App() {
   const { isDarkMode } = useContext(ThemeContext);
@@ -104,6 +105,8 @@ function App() {
         return <Investments />;
       case '#news':
         return <News />;
+      case '#investment-portal':
+        return <InvestmentProposalPortal />;
       case '#admin-dashboard':
         if (userRole === 'admin') {
           return <AdminDashboard />;
@@ -128,6 +131,20 @@ function App() {
           <>
             <MainContent />
             <News />
+            <div style={{maxWidth:980, margin:'1rem auto', padding:'1rem', background:'var(--card-bg)', color:'var(--card-text-color)', border:'1px solid var(--border-color)', borderRadius:12, boxShadow:'var(--box-shadow)'}}>
+              <h2 style={{margin:'0 0 0.5rem 0'}}>Submit Your Investment Proposal</h2>
+              <p style={{margin:'0 0 0.75rem 0'}}>Investors worldwide can submit project proposals directly to GSEZ. Our One-Stop Service team will review and guide you through incentives, permits, utilities, and land allocation.</p>
+              <a href="#investment-portal" style={{
+                display:'inline-block',
+                background:'var(--danger-bg)',
+                color:'#fff',
+                padding:'0.6rem 1rem',
+                borderRadius:8,
+                border:'1px solid var(--danger-border)',
+                fontWeight:800,
+                textDecoration:'none'
+              }}>Open Investment Proposal Portal</a>
+            </div>
             <Description />
           </>
         );

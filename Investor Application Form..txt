@@ -1,0 +1,8 @@
+Investor Application Form.
+
+- Name
+- Email
+- Sector
+- Phone no
+- Proposal(pdf)
+
