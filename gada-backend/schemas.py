@@ -118,3 +118,15 @@ class LikeStatus(BaseModel):
     liked: bool
     likes_count: int
 
+# ----- Investor Proposal -----
+class InvestorProposal(BaseModel):
+    id: int
+    name: str
+    email: str
+    sector: str
+    phone: str
+    proposal_filename: str
+    status: str
+    created_at: datetime
+    model_config = {"from_attributes": True}
+

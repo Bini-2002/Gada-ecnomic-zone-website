@@ -67,3 +67,14 @@ class RateLimit(Base):
     identifier = Column(String, index=True)  # e.g. ip:user or ip:email
     window_start = Column(DateTime, index=True)
     count = Column(Integer, default=0)
+
+class InvestorProposal(Base):
+    __tablename__ = "investor_proposals"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, index=True)
+    email = Column(String, index=True)
+    sector = Column(String, index=True)
+    phone = Column(String, index=True)
+    proposal_filename = Column(String)  # stored under /uploads/proposals/
+    status = Column(String, default='submitted', index=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)

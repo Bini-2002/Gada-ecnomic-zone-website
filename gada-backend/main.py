@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File, Body, Response, Request
+from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File, Body, Response, Request, Form
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
@@ -30,6 +30,8 @@ logging.basicConfig(level=logging.INFO)
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), 'uploads')
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 app.mount('/uploads', StaticFiles(directory=UPLOAD_DIR), name='uploads')
+PROPOSALS_DIR = os.path.join(UPLOAD_DIR, 'proposals')
+os.makedirs(PROPOSALS_DIR, exist_ok=True)
 
 # CORS Middleware
 FRONTEND_ORIGINS = os.getenv("FRONTEND_ORIGINS", "http://localhost:5173").split(",")
@@ -139,6 +141,50 @@ def _send_email(to_email: str, subject: str, body: str):
         logger.info("Sent email to %s: %s", to_email, subject)
     except Exception as e:
         logger.error("Failed to send email: %s", e)
+
+@app.post('/investor-proposals', response_model=schemas.InvestorProposal)
+def submit_investor_proposal(
+    name: str = Form(...),
+    email: str = Form(...),
+    sector: str = Form(...),
+    phone: str = Form(...),
+    proposal: UploadFile = File(...),
+    db: Session = Depends(database.get_db)
+):
+    # basic validations
+    if not re.match(r".+@.+\..+", email):
+        raise HTTPException(status_code=400, detail="Invalid email")
+    if not re.match(r"^[+]?\d[\d\s-]{6,}$", phone):
+        raise HTTPException(status_code=400, detail="Invalid phone number")
+    if proposal.content_type != 'application/pdf':
+        raise HTTPException(status_code=400, detail="Proposal must be a PDF")
+
+    # save file with unique name
+    unique_name = f"{uuid.uuid4().hex}.pdf"
+    dest_path = os.path.join(PROPOSALS_DIR, unique_name)
+    with open(dest_path, 'wb') as out:
+        shutil.copyfileobj(proposal.file, out)
+
+    # persist to DB
+    row = models.InvestorProposal(
+        name=name.strip(),
+        email=email.strip(),
+        sector=sector.strip(),
+        phone=phone.strip(),
+        proposal_filename=f"/uploads/proposals/{unique_name}",
+        status='submitted'
+    )
+    db.add(row)
+    db.commit()
+    db.refresh(row)
+
+    # Optional email ack (best effort)
+    try:
+        _send_email(email, "GSEZ: Proposal received", "Thank you for your submission. Our team will contact you shortly.")
+    except Exception:
+        pass
+
+    return row
 
 @app.post("/token", response_model=schemas.AccessToken)
 def login_for_access_token(response: Response, form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(database.get_db), request: Request = None):
