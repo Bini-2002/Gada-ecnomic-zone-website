@@ -60,7 +60,7 @@ export default function InvestmentProposalPortal() {
       const res = await fetch(`${API_BASE}/investor-proposals`, {
         method: 'POST',
         body: data,
-        credentials: 'include'
+        credentials: 'omit'
       });
       if (res.ok) {
         setMessage('Your proposal has been submitted successfully. Our team will contact you shortly.');

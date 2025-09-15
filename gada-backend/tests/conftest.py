@@ -1,4 +1,6 @@
-import os, tempfile, pytest
+import os, sys, tempfile, pytest
+# Ensure project root (gada-backend) is on sys.path so tests can import modules directly
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 # Ensure SECRET_KEY set before importing application modules
 os.environ.setdefault('SECRET_KEY', 'test_secret_key')
 os.environ.setdefault('DISABLE_SCHEDULER', '1')
@@ -16,8 +18,15 @@ def test_engine():
     url = f'sqlite:///{path}'
     engine = create_engine(url, connect_args={"check_same_thread": False})
     models.Base.metadata.create_all(bind=engine)
-    yield engine
-    os.unlink(path)
+    try:
+        yield engine
+    finally:
+        # Dispose engine to release SQLite file handles on Windows before unlink
+        try:
+            engine.dispose()
+        except Exception:
+            pass
+        os.unlink(path)
 
 @pytest.fixture()
 def db_session(test_engine):

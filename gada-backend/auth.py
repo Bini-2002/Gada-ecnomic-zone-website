@@ -32,7 +32,11 @@ def get_password_hash(password):
 def create_access_token(data: dict):
     to_encode = data.copy()
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire})
+    # Include a random JTI so tokens differ even if issued within the same second
+    to_encode.update({
+        "exp": expire,
+        "jti": secrets.token_urlsafe(8),
+    })
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 

@@ -1,28 +1,21 @@
-/* Verify Email page styles */
-:root {
-  --ve-accent: #e53935;
-  --ve-accent-700: #b71c1c;
-  --ve-bg: #0d0d0d;
-  --ve-card: #ffffff;
-  --ve-text: #111111;
-  --ve-muted: #666666;
-  --ve-success: #2e7d32;
-  --ve-error: #c62828;
-}
-
-[data-theme="dark"] :root, [data-theme="dark"] body {
-  --ve-card: #171717;
-  --ve-text: #eaeaea;
-  --ve-muted: #aaaaaa;
-}
-
+/* Verify Email page styles - theme-aware, polished */
 .verify-wrap {
-  min-height: 60vh;
-  padding: clamp(24px, 3vw, 48px) 16px;
+  --ve-accent: var(--danger-bg, #e53935);
+  --ve-accent-700: var(--danger-bg-hover, #b71c1c);
+  --ve-text: var(--text-color, #111);
+  --ve-muted: color-mix(in oklab, var(--ve-text), transparent 45%);
+  --ve-card: var(--card-bg, #fff);
+  --ve-border: var(--border-color, rgba(0,0,0,.08));
+  --ve-shadow: var(--box-shadow, 0 10px 30px rgba(0,0,0,.08));
+
+  min-height: 70vh;
+  padding: clamp(20px, 3vw, 56px) 16px;
   display: grid;
   place-items: center;
-  background: radial-gradient(1200px 600px at 10% -10%, rgba(229,57,53,0.15), transparent),
-              radial-gradient(1000px 500px at 110% -20%, rgba(229,57,53,0.10), transparent);
+  background:
+    radial-gradient(1200px 600px at 10% -10%, color-mix(in oklab, var(--ve-accent), transparent 85%), transparent),
+    radial-gradient(1000px 500px at 110% -20%, color-mix(in oklab, var(--ve-accent), transparent 90%), transparent),
+    var(--background-color, #fff);
 }
 
 .verify-card {
@@ -30,8 +23,8 @@
   background: var(--ve-card);
   color: var(--ve-text);
   border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.08), 0 2px 12px rgba(0,0,0,0.06);
-  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: var(--ve-shadow);
+  border: 1px solid var(--ve-border);
   overflow: hidden;
   animation: ve-pop 220ms ease-out;
 }
@@ -51,64 +44,86 @@
   place-items: center;
   font-size: 28px;
   margin-bottom: 12px;
-  background: rgba(229,57,53,0.12);
+  background: color-mix(in oklab, var(--ve-accent), transparent 88%);
   color: var(--ve-accent);
 }
 
 .verify-header h2 { font-size: clamp(22px, 3vw, 28px); margin: 8px 0; font-weight: 800; letter-spacing: .3px; }
-.verify-header p { color: var(--ve-muted); margin: 0 0 8px 0; }
+.verify-header p { color: var(--ve-muted); margin: 0 0 14px 0; }
 
 .verify-form { padding: 8px 24px 24px 24px; display: grid; gap: 16px; }
 
-.verify-code { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
 .code-input {
-  height: 56px;
-  border-radius: 10px;
-  border: 2px solid rgba(0,0,0,0.12);
+  height: var(--code-size, 58px);
+  border-radius: 12px;
+  border: 1.8px solid var(--ve-border);
   text-align: center;
-  font-size: 22px;
-  font-weight: 700;
+  font-size: 24px;
+  font-weight: 800;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   letter-spacing: 1px;
   outline: none;
-  background: #fff;
-  color: #111;
+  background: var(--card-bg, #fff);
+  color: var(--text-color, #111);
 }
-[data-theme="dark"] .code-input { background: #0f0f0f; color: #fff; border-color: rgba(255,255,255,0.12); }
-.code-input:focus { border-color: var(--ve-accent); box-shadow: 0 0 0 3px rgba(229,57,53,0.14); }
+.code-input:focus { border-color: var(--ve-accent); box-shadow: 0 0 0 3px color-mix(in oklab, var(--ve-accent), transparent 86%); }
+.code-input::placeholder { color: rgba(0,0,0,0.45); }
+[data-theme="dark"] .code-input::placeholder { color: rgba(255,255,255,0.45); }
+
+.code-input--full {
+  text-align: left;
+  padding-left: 14px;
+  letter-spacing: 4px;
+  font-variant-numeric: tabular-nums;
+}
 
 .verify-fields { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
 .verify-fields input {
   padding: 12px 14px;
   border-radius: 10px;
-  border: 1.5px solid rgba(0,0,0,0.12);
+  border: 1.5px solid var(--ve-border);
   outline: none;
-  background: #fff;
-  color: #111;
+  background: var(--card-bg, #fff);
+  color: var(--text-color, #111);
 }
-[data-theme="dark"] .verify-fields input { background: #0f0f0f; color: #fff; border-color: rgba(255,255,255,0.12); }
-.verify-fields input:focus { border-color: var(--ve-accent); box-shadow: 0 0 0 3px rgba(229,57,53,0.14); }
+.verify-fields input:focus { border-color: var(--ve-accent); box-shadow: 0 0 0 3px color-mix(in oklab, var(--ve-accent), transparent 86%); }
 
 .verify-btn {
-  background: var(--ve-accent);
+  background: linear-gradient(180deg, var(--ve-accent), var(--ve-accent-700));
   color: #fff;
-  border: none;
-  border-radius: 10px;
-  padding: 14px 16px;
-  font-weight: 800;
+  border: 1px solid var(--ve-accent-700);
+  border-radius: 12px;
+  padding: 14px 18px;
+  font-weight: 900;
   letter-spacing: 0.3px;
   cursor: pointer;
-  transition: transform .05s ease, background .2s ease;
+  box-shadow: 0 8px 22px rgba(0,0,0,.15);
+  transition: transform .05s ease, filter .15s ease, box-shadow .2s ease;
 }
-.verify-btn:hover { background: var(--ve-accent-700); }
+.verify-btn:hover { filter: brightness(1.02); box-shadow: 0 10px 24px rgba(0,0,0,.18); }
 .verify-btn:active { transform: translateY(1px); }
 .verify-btn[disabled] { opacity: .6; cursor: not-allowed; }
 
 .verify-msg { text-align: center; font-weight: 700; padding: 8px; border-radius: 8px; }
-.verify-msg.success { color: var(--ve-success); background: rgba(46,125,50,.08); }
-.verify-msg.error { color: var(--ve-error); background: rgba(198,40,40,.08); }
+.verify-msg.success { color: #2e7d32; background: rgba(46,125,50,.08); border: 1px solid rgba(46,125,50,0.35); }
+.verify-msg.error { color: #c62828; background: rgba(198,40,40,.08); border: 1px solid rgba(198,40,40,0.3); }
 
 @media (max-width: 560px) {
+  .verify-header { padding: 22px 16px 6px 16px; }
+  .verify-form { padding: 8px 12px 18px 12px; gap: 14px; }
   .verify-fields { grid-template-columns: 1fr; }
-  .verify-code { gap: 10px; }
+  /* single input is naturally responsive */
   .code-input { height: 52px; }
+}
+
+@media (max-width: 420px) {
+  .verify-wrap { padding: 16px 10px; }
+  .verify-form { padding: 8px 10px 16px 10px; }
+  .code-input { height: 46px; font-size: 22px; }
+}
+
+@media (max-width: 340px) {
+  .verify-wrap { padding: 12px 8px; }
+  .verify-form { padding: 8px 8px 14px 8px; }
+  .code-input { height: 42px; font-size: 20px; }
 }

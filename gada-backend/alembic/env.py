@@ -1,6 +1,9 @@
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 from alembic import context
+import os, sys
+# Ensure parent directory (project root) is on sys.path so 'models' can be imported
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import models
 from sqlalchemy import create_engine
 

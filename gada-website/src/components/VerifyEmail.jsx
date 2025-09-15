@@ -5,24 +5,21 @@ import '../VerifyEmail.css';
 export default function VerifyEmail() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
-  const [codeDigits, setCodeDigits] = useState(['', '', '', '', '', '']);
+  const [code, setCode] = useState('');
   const [msg, setMsg] = useState('');
   const [status, setStatus] = useState('idle'); // idle | loading | success | error
-  const inputsRef = useRef([]);
+  const codeRef = useRef(null);
 
-  useEffect(() => {
-    // focus first input on mount
-    inputsRef.current?.[0]?.focus();
-  }, []);
-
-  const code = codeDigits.join('');
+  useEffect(() => { codeRef.current?.focus(); }, []);
 
   const onSubmit = async (e) => {
     e.preventDefault();
     setMsg('');
+    const cleaned = (code || '').replace(/\D/g, '').slice(0, 6);
+    if (cleaned.length !== 6) { setMsg('Please enter the 6-digit code.'); setStatus('error'); return; }
     setStatus('loading');
     try {
-      const res = await verifyEmail({ token: code.trim(), username: username.trim() || undefined, email: email.trim() || undefined });
+      const res = await verifyEmail({ token: cleaned, username: username.trim() || undefined, email: email.trim() || undefined });
       setMsg(res.detail || 'Verified');
       setStatus('success');
     } catch (err) {
@@ -31,20 +28,10 @@ export default function VerifyEmail() {
     }
   };
 
-  const handleDigit = (index, val) => {
-    const v = val.replace(/\D/g, '').slice(0, 1);
-    const next = [...codeDigits];
-    next[index] = v;
-    setCodeDigits(next);
-    if (v && index < 5) {
-      inputsRef.current?.[index + 1]?.focus();
-    }
-  };
-
-  const handleKeyDown = (index, e) => {
-    if (e.key === 'Backspace' && !codeDigits[index] && index > 0) {
-      inputsRef.current?.[index - 1]?.focus();
-    }
+  const onCodeChange = (v) => {
+    // Only digits, max 6. Support paste.
+    const cleaned = v.replace(/\D/g, '').slice(0, 6);
+    setCode(cleaned);
   };
 
   return (
@@ -57,22 +44,20 @@ export default function VerifyEmail() {
         </div>
 
         <form className="verify-form" onSubmit={onSubmit}>
-          <div className="verify-code">
-            {codeDigits.map((d, i) => (
-              <input
-                key={i}
-                ref={el => (inputsRef.current[i] = el)}
-                type="text"
-                inputMode="numeric"
-                maxLength={1}
-                className="code-input"
-                value={d}
-                onChange={e => handleDigit(i, e.target.value)}
-                onKeyDown={e => handleKeyDown(i, e)}
-                aria-label={`Digit ${i + 1}`}
-                required
-              />
-            ))}
+          <div className="verify-fields" style={{gridTemplateColumns:'1fr'}}>
+            <input
+              ref={codeRef}
+              type="text"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              placeholder="Enter 6-digit code"
+              value={code}
+              onChange={e=>onCodeChange(e.target.value)}
+              className="code-input code-input--full"
+              aria-label="6-digit verification code"
+              maxLength={6}
+              required
+            />
           </div>
 
           <div className="verify-fields">

@@ -34,13 +34,17 @@ PROPOSALS_DIR = os.path.join(UPLOAD_DIR, 'proposals')
 os.makedirs(PROPOSALS_DIR, exist_ok=True)
 
 # CORS Middleware
-FRONTEND_ORIGINS = os.getenv("FRONTEND_ORIGINS", "http://localhost:5173").split(",")
+FRONTEND_ORIGINS_STR = os.getenv("FRONTEND_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")
+FRONTEND_ORIGINS = [o.strip() for o in FRONTEND_ORIGINS_STR.split(",") if o.strip()]
+ALLOWED_ORIGIN_REGEX = r"http://(localhost|127\.0\.0\.1)(:\d+)?$"
+logger.info("CORS allow_origins=%s allow_origin_regex=%s", FRONTEND_ORIGINS, ALLOWED_ORIGIN_REGEX)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=FRONTEND_ORIGINS,
+    allow_origin_regex=ALLOWED_ORIGIN_REGEX,
     allow_credentials=True,
-    allow_methods=["GET","POST","PUT","PATCH","DELETE"],
-    allow_headers=["Authorization","Content-Type"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 @app.post("/register", response_model=schemas.User)
@@ -303,7 +307,9 @@ def send_email_verification_login(payload: schemas.EmailVerificationAuthRequest,
     )
     resp = {"detail": "Verification email sent"}
     if not SMTP_HOST or not SMTP_USER or not SMTP_PASS:
+        # Expose code in dev for testing convenience
         resp["dev_code"] = user.email_verification_token
+        resp["token"] = user.email_verification_token
     return resp
 
 @app.post('/email/verify')
