@@ -789,3 +789,49 @@ def delete_post(
     db.delete(post)
     db.commit()
     return {"detail": "Post deleted"}
+
+# --- Investor Proposals Admin Endpoints ---
+@app.get('/investor-proposals', response_model=schemas.InvestorProposalList)
+def list_investor_proposals(
+    db: Session = Depends(database.get_db),
+    current_admin: models.User = Depends(auth.get_current_admin),
+    skip: int = 0,
+    limit: int = 50,
+    search: str | None = None,
+    status: str | None = None,
+    sector: str | None = None
+):
+    q = db.query(models.InvestorProposal)
+    if status and status != 'all':
+        q = q.filter(models.InvestorProposal.status == status)
+    if sector:
+        q = q.filter(models.InvestorProposal.sector.ilike(f"%{sector}%"))
+    if search:
+        like = f"%{search}%"
+        q = q.filter(
+            (models.InvestorProposal.name.ilike(like)) |
+            (models.InvestorProposal.email.ilike(like)) |
+            (models.InvestorProposal.phone.ilike(like))
+        )
+    total = q.count()
+    items = q.order_by(models.InvestorProposal.id.desc()).offset(skip).limit(min(limit, 200)).all()
+    return {"total": total, "items": items}
+
+@app.patch('/investor-proposals/{proposal_id}/status', response_model=schemas.InvestorProposal)
+def update_investor_proposal_status(
+    proposal_id: int,
+    payload: schemas.InvestorProposalStatusUpdate,
+    db: Session = Depends(database.get_db),
+    current_admin: models.User = Depends(auth.get_current_admin)
+):
+    row = db.query(models.InvestorProposal).filter(models.InvestorProposal.id == proposal_id).first()
+    if not row:
+        raise HTTPException(status_code=404, detail='Proposal not found')
+    # Optional: validate allowed statuses
+    allowed = {'submitted', 'under_review', 'accepted', 'rejected'}
+    if payload.status not in allowed:
+        raise HTTPException(status_code=400, detail=f"Invalid status; allowed: {', '.join(sorted(allowed))}")
+    row.status = payload.status
+    db.commit()
+    db.refresh(row)
+    return row

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { createPost, getPosts, updatePost, listUsers, updateUserRole, deleteUser, uploadImage, approveUser, changePassword, deletePost } from "../api";
+import { createPost, getPosts, updatePost, listUsers, updateUserRole, deleteUser, uploadImage, approveUser, changePassword, deletePost, listInvestorProposals, updateInvestorProposalStatus } from "../api";
 import { runPublishScheduled, backfillPostStatus } from "../api";
 import "../AdminDashboard.css";
 
@@ -46,6 +46,15 @@ export default function AdminDashboard() {
   const [postsTotal, setPostsTotal] = useState(0);
   const token = localStorage.getItem('token');
 
+  // Proposals state
+  const [proposals, setProposals] = useState([]);
+  const [proposalsTotal, setProposalsTotal] = useState(0);
+  const [proposalSearch, setProposalSearch] = useState("");
+  const [proposalStatusFilter, setProposalStatusFilter] = useState('all');
+  const [proposalSectorFilter, setProposalSectorFilter] = useState("");
+  const [proposalsLoading, setProposalsLoading] = useState(true);
+  const [proposalsError, setProposalsError] = useState(null);
+
   useEffect(() => {
     (async () => {
       try {
@@ -82,6 +91,22 @@ export default function AdminDashboard() {
     })();
     return () => { active = false; };
   }, [userSearch]);
+
+  // Load investor proposals
+  useEffect(() => {
+    let active = true;
+    setProposalsLoading(true);
+    (async () => {
+      try {
+        const data = await listInvestorProposals({ skip: 0, limit: 50, search: proposalSearch, status: proposalStatusFilter, sector: proposalSectorFilter }, token);
+        if (!active) return;
+        setProposals(data.items);
+        setProposalsTotal(data.total);
+      } catch (e) { if (active) setProposalsError(e.message); }
+      finally { if (active) setProposalsLoading(false); }
+    })();
+    return () => { active = false; };
+  }, [proposalSearch, proposalStatusFilter, proposalSectorFilter]);
 
   // Derived list of pending registrations from fetched users
   const pendingRegistrations = users.filter(u => !u.approved);
@@ -204,6 +229,78 @@ export default function AdminDashboard() {
   return (
     <div className="admin-dashboard">
       <h1 className="admin-title">Admin Dashboard</h1>
+
+      <div className="admin-section">
+        <h2>Investor Proposals</h2>
+        <div style={{display:'flex', gap:'0.5rem', flexWrap:'wrap', marginBottom:'0.75rem'}}>
+          <input type="text" placeholder="Search name/email/phone..." value={proposalSearch} onChange={e=>setProposalSearch(e.target.value)} className="post-input" style={{flex:1}} />
+          <input type="text" placeholder="Filter by sector" value={proposalSectorFilter} onChange={e=>setProposalSectorFilter(e.target.value)} className="post-input" />
+          <select value={proposalStatusFilter} onChange={e=>setProposalStatusFilter(e.target.value)} className="post-input">
+            <option value="all">All</option>
+            <option value="submitted">Submitted</option>
+            <option value="under_review">Under Review</option>
+            <option value="accepted">Accepted</option>
+            <option value="rejected">Rejected</option>
+          </select>
+          <div style={{marginLeft:'auto', fontWeight:600}}>Total: {proposalsTotal}</div>
+        </div>
+        {proposalsLoading && <div>Loading proposals...</div>}
+        {proposalsError && <div style={{color:'red'}}>{proposalsError}</div>}
+        {!proposalsLoading && proposals.length === 0 && <div>No proposals found.</div>}
+        {proposals.length > 0 && (
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Sector</th>
+                <th>Status</th>
+                <th>Proposal</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {proposals.map(p => (
+                <tr key={p.id}>
+                  <td>{p.id}</td>
+                  <td>{p.name}</td>
+                  <td>{p.email}</td>
+                  <td>{p.phone}</td>
+                  <td>{p.sector}</td>
+                  <td>
+                    <select value={p.status} onChange={async e=>{
+                      try {
+                        const updated = await updateInvestorProposalStatus(p.id, e.target.value, token);
+                        setProposals(list => list.map(it => it.id === p.id ? updated : it));
+                      } catch (err) { alert(err.message); }
+                    }}>
+                      <option value="submitted">submitted</option>
+                      <option value="under_review">under_review</option>
+                      <option value="accepted">accepted</option>
+                      <option value="rejected">rejected</option>
+                    </select>
+                  </td>
+                  <td>
+                    {p.proposal_filename ? (
+                      <a href={`${API_BASE}${p.proposal_filename}`} target="_blank" rel="noreferrer">Download PDF</a>
+                    ) : '—'}
+                  </td>
+                  <td>
+                    <button type="button" className="approve-btn" onClick={()=>{
+                      try {
+                        navigator.clipboard.writeText(`${p.name} | ${p.email} | ${p.phone} | ${p.sector}`);
+                        alert('Copied contact summary');
+                      } catch (_) {}
+                    }}>Copy Contact</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
 
       <div className="admin-section">
         <h2>Approve Registrations</h2>

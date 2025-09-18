@@ -245,3 +245,32 @@ export async function verifyEmail({ token, username, email }) {
   if (!res.ok) throw new Error(data.detail || 'Verification failed');
   return data; // { detail }
 }
+
+// --- Investor Proposals (Admin) ---
+export async function listInvestorProposals({ skip = 0, limit = 50, search, status, sector } = {}, token) {
+  const params = new URLSearchParams();
+  if (skip) params.append('skip', skip);
+  if (limit) params.append('limit', limit);
+  if (search) params.append('search', search);
+  if (status) params.append('status', status);
+  if (sector) params.append('sector', sector);
+  const res = await fetch(`${API_BASE}/investor-proposals` + (params.toString() ? `?${params}` : ''), {
+    headers: { Authorization: `Bearer ${token}` },
+    credentials: 'include'
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || 'Failed to load proposals');
+  return data; // { total, items }
+}
+
+export async function updateInvestorProposalStatus(id, status, token) {
+  const res = await fetch(`${API_BASE}/investor-proposals/${id}/status`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ status }),
+    credentials: 'include'
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || 'Failed to update proposal');
+  return data;
+}

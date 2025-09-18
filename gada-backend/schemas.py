@@ -130,3 +130,10 @@ class InvestorProposal(BaseModel):
     created_at: datetime
     model_config = {"from_attributes": True}
 
+class InvestorProposalList(BaseModel):
+    total: int
+    items: list[InvestorProposal]
+
+class InvestorProposalStatusUpdate(BaseModel):
+    status: str
+
