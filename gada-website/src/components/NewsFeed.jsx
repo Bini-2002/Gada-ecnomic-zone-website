@@ -64,36 +64,86 @@ export default function NewsFeed({ postId, onBack }){
       <button onClick={onBack} style={{margin:'0.75rem 0', padding:'0.4rem 0.8rem', borderRadius:'0.4rem', border:'1px solid #ccc'}}>← Back</button>
       <h1 className="news-card-title" style={{fontSize:'2rem'}}>{post.title}</h1>
       <div className="news-card-date" style={{fontSize:'1.1rem'}}>{post.date}</div>
-      <div style={{display:'flex', gap:'0.5rem', alignItems:'center', margin:'0.5rem 0 0.75rem'}}>
-        <button onClick={async()=>{ try { const s = await toggleLike(postId); setLikes(s);} catch(e){ alert(e.message);} }} style={{padding:'0.3rem 0.6rem'}}>👍 {likes.liked ? 'Unlike' : 'Like'} ({likes.likes_count})</button>
-        <button onClick={async()=>{
-          const shareData = { title: post.title, text: post.details.slice(0,120), url: window.location.href };
-          if (navigator.share) { try { await navigator.share(shareData); } catch(_){} }
-          else { navigator.clipboard?.writeText(shareData.url); alert('Link copied to clipboard'); }
-        }} style={{padding:'0.3rem 0.6rem'}}>🔗 Share</button>
-      </div>
       <div style={{display:'flex', gap:'0.75rem', flexWrap:'wrap', margin:'0.75rem 0'}}>
         {images.map((src, i) => (
           <img key={i} src={src} alt={`image-${i}`} style={{maxWidth:'100%', width:'calc(50% - 0.75rem)', borderRadius:'0.5rem'}} />
         ))}
       </div>
+      <div className="news-actions">
+        <button
+          className={`action-btn like-btn ${likes.liked ? 'liked' : ''}`}
+          onClick={async () => {
+            try { const s = await toggleLike(postId); setLikes(s);} catch (e) { alert(e.message); }
+          }}
+        >
+          <span className="icon">👍</span>
+          <span>{likes.liked ? 'Liked' : 'Like'}</span>
+          <span className="count">({likes.likes_count})</span>
+        </button>
+        <button
+          className="action-btn share-btn"
+          onClick={async () => {
+            const shareData = { title: post.title, text: post.details.slice(0,120), url: window.location.href };
+            if (navigator.share) { try { await navigator.share(shareData); } catch(_){} }
+            else { navigator.clipboard?.writeText(shareData.url); alert('Link copied to clipboard'); }
+          }}
+        >
+          <span className="icon">🔗</span>
+          <span>Share</span>
+        </button>
+      </div>
       <p style={{fontSize:'1.15rem', lineHeight:1.7, whiteSpace:'pre-wrap'}}>{post.details}</p>
 
-      <div style={{marginTop:'1.25rem'}}>
-        <h3>Comments</h3>
-        <form onSubmit={async e => { e.preventDefault(); const text = commentText.trim(); if (!text) return; try { const c = await addComment(postId, text); setComments(prev => [...prev, c]); setCommentText(''); } catch (err) { alert(err.message); } }} style={{display:'flex', gap:'0.5rem', marginBottom:'0.75rem'}}>
-          <input value={commentText} onChange={e=>setCommentText(e.target.value)} placeholder="Write a comment..." style={{flex:1, padding:'0.5rem 0.7rem'}} />
-          <button type="submit">Post</button>
+      <div className="comments-section">
+        <h3 className="comments-title">Comments</h3>
+        <form
+          className="comment-form"
+          onSubmit={async e => {
+            e.preventDefault();
+            const text = commentText.trim();
+            if (!text) return;
+            try {
+              const c = await addComment(postId, text);
+              setComments(prev => [...prev, c]);
+              setCommentText('');
+            } catch (err) { alert(err.message); }
+          }}
+        >
+          <input
+            className="comment-input"
+            value={commentText}
+            onChange={e=>setCommentText(e.target.value)}
+            placeholder="Write a comment..."
+          />
+          <button type="submit" className="comment-submit">Post</button>
         </form>
-        <div>
-          {comments.map(c => (
-            <div key={c.id} style={{padding:'0.5rem 0', borderBottom:'1px solid #eee'}}>
-              <div style={{fontSize:'0.85rem', opacity:0.7}}>#{c.user_id} • {new Date(c.created_at).toLocaleString()}</div>
-              <div style={{whiteSpace:'pre-wrap'}}>{c.content}</div>
-              <button onClick={async()=>{ try { await deleteCommentApi(postId, c.id); setComments(prev => prev.filter(x => x.id !== c.id)); } catch (err) { alert(err.message); } }} style={{background:'transparent', color:'#d32f2f', border:'none', padding:0, cursor:'pointer'}}>Delete</button>
-            </div>
-          ))}
-          {comments.length === 0 && <div>No comments yet.</div>}
+        <div className="comment-list">
+          {comments.map(c => {
+            const displayName = (c.user && (c.user.username || c.user.name)) || c.username || c.user_name || `User #${c.user_id}`;
+            const initial = (displayName || '?').toString().trim().charAt(0).toUpperCase() || '?';
+            return (
+              <div key={c.id} className="comment-item">
+                <div className="comment-avatar" aria-hidden>{initial}</div>
+                <div className="comment-body">
+                  <div className="comment-header">
+                    <span className="comment-username">{displayName}</span>
+                    <span className="comment-date">{new Date(c.created_at).toLocaleString()}</span>
+                  </div>
+                  <div className="comment-content">{c.content}</div>
+                  <div className="comment-actions">
+                    <button
+                      className="comment-delete"
+                      onClick={async()=>{
+                        try { await deleteCommentApi(postId, c.id); setComments(prev => prev.filter(x => x.id !== c.id)); }
+                        catch (err) { alert(err.message); }
+                      }}
+                    >Delete</button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          {comments.length === 0 && <div className="no-comments">No comments yet.</div>}
         </div>
       </div>
     </div>

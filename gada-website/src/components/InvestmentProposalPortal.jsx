@@ -130,7 +130,7 @@ export default function InvestmentProposalPortal() {
         <h3>What happens next?</h3>
         <ul>
           <li>Your proposal is reviewed by the GSEZ One-Stop Service team.</li>
-          <li>We may contact you for clarifications and next steps.</li>
+          <li>We may contact you via your email address for clarifications and next steps.</li>
           <li>Upon approval, facilitation for permits, land, and utilities begins.</li>
         </ul>
       </div>

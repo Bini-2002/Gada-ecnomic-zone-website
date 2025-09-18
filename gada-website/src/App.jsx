@@ -136,21 +136,21 @@ function App() {
         return (
           <>
             <MainContent />
-            <News />
-            <div style={{maxWidth:980, margin:'1rem auto', padding:'1rem', background:'var(--card-bg)', color:'var(--card-text-color)', border:'1px solid var(--border-color)', borderRadius:12, boxShadow:'var(--box-shadow)'}}>
-              <h2 style={{margin:'0 0 0.5rem 0'}}>Submit Your Investment Proposal</h2>
-              <p style={{margin:'0 0 0.75rem 0'}}>Investors worldwide can submit project proposals directly to GSEZ. Our One-Stop Service team will review and guide you through incentives, permits, utilities, and land allocation.</p>
-              <a href="#investment-portal" style={{
-                display:'inline-block',
-                background:'var(--danger-bg)',
-                color:'#fff',
-                padding:'0.6rem 1rem',
-                borderRadius:8,
-                border:'1px solid var(--danger-border)',
-                fontWeight:800,
-                textDecoration:'none'
-              }}>Open Investment Proposal Portal</a>
-            </div>
+            <News previewCount={3} />
+            <section className="proposal-cta" aria-labelledby="proposal-cta-title">
+              <div className="proposal-cta-inner">
+                <div className="proposal-cta-text">
+                  <h2 id="proposal-cta-title">Submit Your Investment Proposal</h2>
+                  <p>
+                    Investors worldwide can submit project proposals directly to GSEZ. Our One-Stop Service team will review
+                    and guide you through incentives, permits, utilities, and land allocation.
+                  </p>
+                </div>
+                <div className="proposal-cta-action">
+                  <a className="cta-btn" href="#investment-portal">Open Investment Proposal Portal</a>
+                </div>
+              </div>
+            </section>
             <Description />
           </>
         );

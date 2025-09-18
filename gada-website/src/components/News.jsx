@@ -69,7 +69,7 @@ const fallbackNews = [
   },
 ];
 
-function News() {
+function News({ previewCount }) {
   const [posts, setPosts] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -78,23 +78,39 @@ function News() {
   const [search, setSearch] = useState("");
   const PAGE_SIZE = 6;
 
+  const isPreview = typeof previewCount === 'number' && previewCount > 0;
+
+  const getItemDateString = (item) => {
+    return item?.date || item?.publish_at || item?.created_at || item?.createdAt || item?.updated_at || null;
+  };
+
+  const getItemTime = (item) => {
+    const ds = getItemDateString(item);
+    if (!ds) return 0;
+    const t = new Date(ds).getTime();
+    return isNaN(t) ? 0 : t;
+  };
+
   const loadPosts = async (reset = false) => {
     if (!hasMore && !reset) return;
     try {
       setLoading(true);
       const data = await getPosts({ skip: reset ? 0 : skip, limit: PAGE_SIZE, search: search || undefined });
-      const items = data.items || [];
+      const items = (data.items || []).slice().sort((a,b) => getItemTime(b) - getItemTime(a));
       if (reset) {
         setPosts(items);
         setSkip(items.length);
       } else {
-        setPosts(p => [...p, ...items]);
+        setPosts(p => {
+          const merged = [...p, ...items];
+          return merged.slice().sort((a,b) => getItemTime(b) - getItemTime(a));
+        });
         setSkip(s => s + items.length);
       }
       setHasMore(items.length === PAGE_SIZE);
     } catch (e) {
       setError(e.message || 'Failed to load posts');
-      if (reset) setPosts(fallbackNews);
+      if (reset) setPosts([...fallbackNews].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
     } finally {
       setLoading(false);
     }
@@ -103,33 +119,42 @@ function News() {
   useEffect(() => { loadPosts(true); /* initial */ }, []);
   const handleSearch = (e) => { e.preventDefault(); setSkip(0); setHasMore(true); loadPosts(true); };
 
+  const itemsToRender = isPreview ? (posts || []).slice(0, previewCount) : (posts || []);
+
   return (
     <div className="news-list-container">
       <h1 className="news-list-title">Latest News</h1>
-      <form onSubmit={handleSearch} style={{display:'flex', gap:'0.5rem', margin:'0 0 1rem 0'}}>
-        <input
-          type="text"
-            placeholder="Search news..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            style={{flex:1, padding:'0.6rem 0.8rem', border:'1px solid #ccc', borderRadius:'0.5rem'}}
-        />
-        <button type="submit" style={{padding:'0.6rem 1rem', border:'none', background:'#e53935', color:'#fff', fontWeight:700, borderRadius:'0.5rem', cursor:'pointer'}}>Search</button>
-      </form>
+      {!isPreview && (
+        <form onSubmit={handleSearch} style={{display:'flex', gap:'0.5rem', margin:'0 0 1rem 0'}}>
+          <input
+            type="text"
+              placeholder="Search news..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              style={{flex:1, padding:'0.6rem 0.8rem', border:'1px solid #ccc', borderRadius:'0.5rem'}}
+          />
+          <button type="submit" style={{padding:'0.6rem 1rem', border:'none', background:'#e53935', color:'#fff', fontWeight:700, borderRadius:'0.5rem', cursor:'pointer'}}>Search</button>
+        </form>
+      )}
       {loading && <div className="news-loading">Loading...</div>}
       {error && !loading && <div className="news-error">{error}</div>}
       <div className="news-list-grid">
-        {(posts || []).map((item, idx) => (
+        {itemsToRender.map((item, idx) => (
           <NewsCard key={idx} {...item} />
         ))}
       </div>
-      {!loading && hasMore && (
+      {!isPreview && !loading && hasMore && (
         <div style={{display:'flex', justifyContent:'center', marginTop:'1.25rem'}}>
           <button onClick={() => loadPosts(false)} style={{padding:'0.7rem 1.4rem', background:'#111', color:'#fff', border:'none', borderRadius:'0.5rem', fontWeight:700, cursor:'pointer'}}>Load More</button>
         </div>
       )}
-      {!loading && !hasMore && posts.length > 0 && (
+      {!isPreview && !loading && !hasMore && posts.length > 0 && (
         <div style={{textAlign:'center', marginTop:'1rem', fontSize:'0.9rem', opacity:0.7}}>No more posts.</div>
+      )}
+      {isPreview && !loading && (posts.length > (previewCount || 0) || hasMore) && (
+        <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+          <a className="cta-btn" href="#news">See more news and events</a>
+        </div>
       )}
     </div>
   );

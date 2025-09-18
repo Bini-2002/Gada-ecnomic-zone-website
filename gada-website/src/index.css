@@ -74,3 +74,104 @@ body {
 
 html { scroll-behavior: smooth; }
 
+/* Proposal CTA Section */
+.proposal-cta {
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.proposal-cta-inner {
+  max-width: 1080px;
+  margin: 0 auto;
+  background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.9)), var(--card-bg);
+  color: var(--card-text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  box-shadow: var(--box-shadow);
+  padding: 1.25rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.proposal-cta-text h2 {
+  margin: 0 0 0.35rem 0;
+  font-size: 1.4rem;
+}
+
+.proposal-cta-text p {
+  margin: 0;
+  color: var(--text-secondary-color);
+}
+
+.proposal-cta-action {
+  display: flex;
+  align-items: center;
+}
+
+.cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--danger-bg);
+  color: #fff;
+  padding: 0.7rem 1.1rem;
+  border-radius: 10px;
+  border: 1px solid var(--danger-border);
+  font-weight: 800;
+  text-decoration: none;
+  transition: background 160ms ease, transform 120ms ease, box-shadow 160ms ease;
+  box-shadow: 0 2px 8px rgba(229, 57, 53, 0.2);
+}
+
+.cta-btn:hover {
+  background: var(--danger-bg-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(229, 57, 53, 0.28);
+}
+
+.cta-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 10px rgba(229, 57, 53, 0.22);
+}
+
+.cta-btn:focus-visible {
+  outline: 3px solid rgba(229, 57, 53, 0.4);
+  outline-offset: 2px;
+}
+
+@media (min-width: 720px) {
+  .proposal-cta-inner {
+    grid-template-columns: 3fr auto;
+    align-items: center;
+    padding: 1.5rem 1.75rem;
+  }
+
+  .proposal-cta-text h2 {
+    font-size: 1.6rem;
+  }
+}
+
+@media (min-width: 1080px) {
+  .proposal-cta-inner {
+    padding: 1.75rem 2rem;
+  }
+
+  .proposal-cta-text h2 {
+    font-size: 1.75rem;
+  }
+}
+
+/* Dark theme adjustments for Proposal CTA */
+[data-theme='dark'] .proposal-cta-inner {
+  /* Remove light overlay and use dark card background with deeper shadow */
+  background: var(--card-bg);
+  border-color: #2a2a2a;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+
+[data-theme='dark'] .cta-btn {
+  /* Slightly stronger glow on dark for visibility */
+  box-shadow: 0 2px 12px rgba(229, 57, 53, 0.3);
+}
+
