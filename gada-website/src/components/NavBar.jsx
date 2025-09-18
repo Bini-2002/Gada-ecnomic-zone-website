@@ -37,7 +37,20 @@ export default function NavBar({ userRole, onLogout }) {
     localStorage.removeItem('token');
     if (onLogout) onLogout();
     window.location.hash = '#news';
+    try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch { window.scrollTo(0,0); }
     window.location.reload();
+  };
+
+  const navigateTo = (hash) => {
+    window.location.hash = hash;
+    // close all menus
+    setIsDropdownOpen(false);
+    setIsOneStopOpen(false);
+    setIsResourceOpen(false);
+    setIsOpportunityOpen(false);
+    setIsMenuOpen(false);
+    // scroll to top for context
+    try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch { window.scrollTo(0,0); }
   };
 
   return (
@@ -64,10 +77,10 @@ export default function NavBar({ userRole, onLogout }) {
                   aria-label="Toggle One Stop submenu"
                 ></i>
                 <div className="nav-submenu" style={{ display: isOneStopOpen ? 'block' : 'none' }}>
-                  <a href="#standard" className="nav-submenu-item" onClick={(e) => { e.preventDefault(); window.location.hash = '#standard'; setIsDropdownOpen(false); setIsOneStopOpen(false); }}>
+                  <a href="#standard" className="nav-submenu-item" onClick={(e) => { e.preventDefault(); navigateTo('#standard'); }}>
                     Standard Operation Procedure
                   </a>
-                  <a href="#investor" className="nav-submenu-item" onClick={(e) => { e.preventDefault(); window.location.hash = '#investor'; setIsDropdownOpen(false); setIsOneStopOpen(false); }}>
+                  <a href="#investor" className="nav-submenu-item" onClick={(e) => { e.preventDefault(); navigateTo('#investor'); }}>
                     Investor Roadmap
                   </a>
                 </div>
@@ -87,22 +100,22 @@ export default function NavBar({ userRole, onLogout }) {
                   aria-label="Toggle Resource submenu"
                 ></i>
                 <div className="nav-submenu" style={{ display: isResourceOpen ? 'block' : 'none' }}>
-                  <a href="#value-proposition" className="nav-submenu-item" onClick={(e) => { e.preventDefault(); window.location.hash = '#value-proposition'; setIsDropdownOpen(false); setIsResourceOpen(false); }}>
+                  <a href="#value-proposition" className="nav-submenu-item" onClick={(e) => { e.preventDefault(); navigateTo('#value-proposition'); }}>
                     Value Proposition
                   </a>
-                  <a href="#proclamations" className="nav-submenu-item" onClick={(e) => { e.preventDefault(); window.location.hash = '#proclamations'; setIsDropdownOpen(false); setIsResourceOpen(false); }}>
+                  <a href="#proclamations" className="nav-submenu-item" onClick={(e) => { e.preventDefault(); navigateTo('#proclamations'); }}>
                     Proclamations
                   </a>
-                  <a href="#regulations" className="nav-submenu-item" onClick={(e) => { e.preventDefault(); window.location.hash = '#regulations'; setIsDropdownOpen(false); setIsResourceOpen(false); }}>
+                  <a href="#regulations" className="nav-submenu-item" onClick={(e) => { e.preventDefault(); navigateTo('#regulations'); }}>
                     Regulations
                   </a>
-                  <a href="#directives" className="nav-submenu-item" onClick={(e) => { e.preventDefault(); window.location.hash = '#directives'; setIsDropdownOpen(false); setIsResourceOpen(false); }}>
+                  <a href="#directives" className="nav-submenu-item" onClick={(e) => { e.preventDefault(); navigateTo('#directives'); }}>
                     Directives
                   </a>
-                  <a href="#annual-executive" className="nav-submenu-item" onClick={(e) => { e.preventDefault(); window.location.hash = '#annual-executive'; setIsDropdownOpen(false); setIsResourceOpen(false); }}>
+                  <a href="#annual-executive" className="nav-submenu-item" onClick={(e) => { e.preventDefault(); navigateTo('#annual-executive'); }}>
                     Annual Executive
                   </a>
-                  <a href="#media-gallery" className="nav-submenu-item" onClick={(e) => { e.preventDefault(); window.location.hash = '#media-gallery'; setIsDropdownOpen(false); setIsResourceOpen(false); }}>
+                  <a href="#media-gallery" className="nav-submenu-item" onClick={(e) => { e.preventDefault(); navigateTo('#media-gallery'); }}>
                     Media Gallery
                   </a>
                 </div>
@@ -122,7 +135,7 @@ export default function NavBar({ userRole, onLogout }) {
                   aria-label="Toggle Opportunity submenu"
                 ></i>
                 <div className="nav-submenu" style={{ display: isOpportunityOpen ? 'block' : 'none' }}>
-                  <a href="#investments" className="nav-submenu-item" onClick={(e) => { e.preventDefault(); window.location.hash = '#investments'; setIsDropdownOpen(false); setIsOpportunityOpen(false); }}>
+                  <a href="#investments" className="nav-submenu-item" onClick={(e) => { e.preventDefault(); navigateTo('#investments'); }}>
                     Investments
                   </a>
                   <a href="#incentives" className="nav-submenu-item" onClick={() => setIsOpportunityOpen(false)}>
@@ -130,7 +143,7 @@ export default function NavBar({ userRole, onLogout }) {
                   </a>
                 </div>
               </div>
-              <a href="#news" className="nav-link-item" onClick={(e) => { e.preventDefault(); window.location.hash = '#news'; setIsDropdownOpen(false); }}>News & Events <i className="fi fi-rr-angle-small-right"></i></a>
+              <a href="#news" className="nav-link-item" onClick={(e) => { e.preventDefault(); navigateTo('#news'); }}>News & Events <i className="fi fi-rr-angle-small-right"></i></a>
               {/* Only show Admin Dashboard if logged in as admin */}
               {hasValidToken && userRole === 'admin' && (
                 <a href="#admin-dashboard" className="nav-link-item" style={{ color: '#e53935', fontWeight: 700 }}>Admin Dashboard</a>
@@ -138,7 +151,7 @@ export default function NavBar({ userRole, onLogout }) {
               {hasValidToken ? (
                 <button onClick={handleLogout} className="nav-link-item" style={{ background:'none', border:'none', cursor:'pointer', padding:0 }}>Logout</button>
               ) : (
-                <a href="#log-in" className="nav-link-item">Log in / Sign up </a>
+                <a href="#log-in" className="nav-link-item" onClick={(e)=>{ e.preventDefault(); navigateTo('#log-in'); }}>Log in / Sign up </a>
               )}
             </div>
           )}
@@ -163,10 +176,10 @@ export default function NavBar({ userRole, onLogout }) {
         <div className="nav-links-container">
           <div className="nav-links">
             <div className="nav-links-pad">
-              <a href="#home" className="nav-link-item">Home</a>
+              <a href="#home" className="nav-link-item" onClick={(e)=>{ e.preventDefault(); navigateTo('#home'); }}>Home</a>
             </div>
             <div className="nav-links-pad">
-              <a href="#about" className="nav-link-item">About Us</a>
+              <a href="#about" className="nav-link-item" onClick={(e)=>{ e.preventDefault(); navigateTo('#about'); }}>About Us</a>
             </div>
           </div>
         </div>
@@ -187,14 +200,14 @@ export default function NavBar({ userRole, onLogout }) {
         {/* Always-visible auth control on the right side */}
         {hasValidToken ? (
           <button
-            onClick={handleLogout}
+            onClick={() => { handleLogout(); try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch { window.scrollTo(0,0); } }}
             aria-label="Logout"
             className="logout-button"
           >
             Logout
           </button>
         ) : (
-          <a href="#log-in" className="nav-link-item" style={{ marginLeft: 8 }}>Log in / Sign up</a>
+          <a href="#log-in" className="nav-link-item" style={{ marginLeft: 8 }} onClick={(e)=>{ e.preventDefault(); navigateTo('#log-in'); }}>Log in / Sign up</a>
         )}
       </div>
 

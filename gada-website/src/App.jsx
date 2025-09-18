@@ -51,6 +51,12 @@ function App() {
   useEffect(() => {
     const handleHashChange = () => {
       setCurrentView(window.location.hash);
+      // Smoothly scroll to top on view change to give visual context
+      try {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch {
+        window.scrollTo(0, 0);
+      }
     };
 
     window.addEventListener('hashchange', handleHashChange);
