@@ -17,6 +17,17 @@
   text-transform: uppercase;
 }
 
+/* Optional subtle underline accent for the title */
+.investments-title::after {
+  content: '';
+  display: block;
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent-color, #e74c3c), transparent);
+  margin: 0.6rem auto 0 auto;
+  border-radius: 2px;
+}
+
 .investment-zone {
   background: var(--card-bg, #ffffff);
   border-radius: 16px;
@@ -25,6 +36,7 @@
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07), 0 4px 12px rgba(0, 0, 0, 0.05);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   border-left: 6px solid var(--accent-color, #e74c3c);
+  text-align: center; /* Center content within each zone */
 }
 
 .investment-zone:hover {
@@ -49,17 +61,23 @@
   border-radius: 12px;
   margin-bottom: 1.5rem;
   box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  display: block;
 }
 
 .investment-zone p {
   font-size: 1.1rem;
   line-height: 1.8;
-  margin-bottom: 1rem;
+  margin: 0 auto 1rem auto; /* center block with a max width */
+  max-width: 900px;
+  text-align: center;
 }
 
 .investment-zone ul {
   list-style-type: none;
   padding-left: 0;
+  display: inline-block; /* center the list block */
+  text-align: left; /* keep bullets readable */
+  max-width: 900px;
 }
 
 .investment-zone ul li {
@@ -84,6 +102,8 @@
   background: #1a1a1a;
   color: #e0e0e0;
 }
+
+[data-theme="dark"] .investments-title { color: #ffffff; }
 
 [data-theme="dark"] .investment-zone {
   background: #2c2c2c;

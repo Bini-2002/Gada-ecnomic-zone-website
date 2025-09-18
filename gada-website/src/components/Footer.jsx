@@ -88,13 +88,6 @@ export default function Footer() {
       {message && <div style={{marginTop:8, color: message.includes('success') ? 'green' : 'red'}}>{message}</div>}
     </form>
 
-        <div className='visitor-stats'>
-          <h4>Visitor Statistics</h4>
-          <p>Total Visitors: <strong>1,234</strong></p>
-          <p>Views Today: <strong>56</strong></p>
-          <p>Total Views: <strong>15,678</strong></p>
-          <p>Who's Online: <strong>12</strong></p>
-        </div>
       </div>
 
       <div className="footer-end">
