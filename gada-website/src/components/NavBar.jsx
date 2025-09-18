@@ -36,7 +36,7 @@ export default function NavBar({ userRole, onLogout }) {
   const handleLogout = () => {
     localStorage.removeItem('token');
     if (onLogout) onLogout();
-    window.location.hash = '#news';
+    window.location.hash = '#home';
     try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch { window.scrollTo(0,0); }
     window.location.reload();
   };

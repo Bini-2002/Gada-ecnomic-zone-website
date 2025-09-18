@@ -86,7 +86,7 @@ function App() {
   const handleLogout = () => {
     localStorage.removeItem('token');
     setUserRole(null);
-    window.location.hash = '#news';
+    window.location.hash = '#home';
   };
 
   const renderContent = () => {
