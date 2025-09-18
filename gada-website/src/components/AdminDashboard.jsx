@@ -232,73 +232,91 @@ export default function AdminDashboard() {
 
       <div className="admin-section">
         <h2>Investor Proposals</h2>
-        <div style={{display:'flex', gap:'0.5rem', flexWrap:'wrap', marginBottom:'0.75rem'}}>
-          <input type="text" placeholder="Search name/email/phone..." value={proposalSearch} onChange={e=>setProposalSearch(e.target.value)} className="post-input" style={{flex:1}} />
-          <input type="text" placeholder="Filter by sector" value={proposalSectorFilter} onChange={e=>setProposalSectorFilter(e.target.value)} className="post-input" />
-          <select value={proposalStatusFilter} onChange={e=>setProposalStatusFilter(e.target.value)} className="post-input">
+        <div className="proposals-controls">
+          <input
+            type="text"
+            placeholder="Search name, email or phone..."
+            value={proposalSearch}
+            onChange={e=>setProposalSearch(e.target.value)}
+            className="post-input control-input"
+          />
+          <input
+            type="text"
+            placeholder="Filter by sector"
+            value={proposalSectorFilter}
+            onChange={e=>setProposalSectorFilter(e.target.value)}
+            className="post-input control-input"
+          />
+          <select
+            value={proposalStatusFilter}
+            onChange={e=>setProposalStatusFilter(e.target.value)}
+            className="post-input control-input"
+          >
             <option value="all">All</option>
             <option value="submitted">Submitted</option>
             <option value="under_review">Under Review</option>
             <option value="accepted">Accepted</option>
             <option value="rejected">Rejected</option>
           </select>
-          <div style={{marginLeft:'auto', fontWeight:600}}>Total: {proposalsTotal}</div>
+          <div className="proposals-total">Total: {proposalsTotal}</div>
         </div>
         {proposalsLoading && <div>Loading proposals...</div>}
         {proposalsError && <div style={{color:'red'}}>{proposalsError}</div>}
         {!proposalsLoading && proposals.length === 0 && <div>No proposals found.</div>}
         {proposals.length > 0 && (
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Sector</th>
-                <th>Status</th>
-                <th>Proposal</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {proposals.map(p => (
-                <tr key={p.id}>
-                  <td>{p.id}</td>
-                  <td>{p.name}</td>
-                  <td>{p.email}</td>
-                  <td>{p.phone}</td>
-                  <td>{p.sector}</td>
-                  <td>
-                    <select value={p.status} onChange={async e=>{
-                      try {
-                        const updated = await updateInvestorProposalStatus(p.id, e.target.value, token);
-                        setProposals(list => list.map(it => it.id === p.id ? updated : it));
-                      } catch (err) { alert(err.message); }
-                    }}>
-                      <option value="submitted">submitted</option>
-                      <option value="under_review">under_review</option>
-                      <option value="accepted">accepted</option>
-                      <option value="rejected">rejected</option>
-                    </select>
-                  </td>
-                  <td>
-                    {p.proposal_filename ? (
-                      <a href={`${API_BASE}${p.proposal_filename}`} target="_blank" rel="noreferrer">Download PDF</a>
-                    ) : '—'}
-                  </td>
-                  <td>
-                    <button type="button" className="approve-btn" onClick={()=>{
-                      try {
-                        navigator.clipboard.writeText(`${p.name} | ${p.email} | ${p.phone} | ${p.sector}`);
-                        alert('Copied contact summary');
-                      } catch (_) {}
-                    }}>Copy Contact</button>
-                  </td>
+          <div className="table-wrapper">
+            <table className="admin-table proposals-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Sector</th>
+                  <th>Status</th>
+                  <th>Proposal</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {proposals.map(p => (
+                  <tr key={p.id}>
+                    <td>{p.id}</td>
+                    <td>{p.name}</td>
+                    <td>{p.email}</td>
+                    <td>{p.phone}</td>
+                    <td>{p.sector}</td>
+                    <td>
+                      <select className="status-select" value={p.status} onChange={async e=>{
+                        try {
+                          const updated = await updateInvestorProposalStatus(p.id, e.target.value, token);
+                          setProposals(list => list.map(it => it.id === p.id ? updated : it));
+                        } catch (err) { alert(err.message); }
+                      }}>
+                        <option value="submitted">submitted</option>
+                        <option value="under_review">under_review</option>
+                        <option value="accepted">accepted</option>
+                        <option value="rejected">rejected</option>
+                      </select>
+                    </td>
+                    <td>
+                      {p.proposal_filename ? (
+                        <a className="link-btn" href={`${API_BASE}${p.proposal_filename}`} target="_blank" rel="noreferrer">Download PDF</a>
+                      ) : '—'}
+                    </td>
+                    <td>
+                      <button type="button" className="approve-btn small" onClick={()=>{
+                        try {
+                          navigator.clipboard.writeText(`${p.name} | ${p.email} | ${p.phone} | ${p.sector}`);
+                          alert('Copied contact summary');
+                        } catch (_) {}
+                      }}>Copy Contact</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 

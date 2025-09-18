@@ -71,6 +71,41 @@
   font-weight: 700;
 }
 
+/* Investor Proposals polish */
+.proposals-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr 200px auto;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+.proposals-total { margin-left: auto; font-weight: 700; }
+.control-input { width: 100%; }
+.proposals-table th { white-space: nowrap; }
+.proposals-table td { vertical-align: middle; }
+.status-select {
+  padding: 0.3rem 0.45rem;
+  border-radius: 0.4rem;
+  background: var(--card-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+.link-btn {
+  display: inline-block;
+  padding: 0.35rem 0.6rem;
+  border-radius: 0.4rem;
+  text-decoration: none;
+  background: var(--logo-title-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+.approve-btn.small { padding: 0.3rem 0.7rem; }
+
+@media (max-width: 780px) {
+  .proposals-controls { grid-template-columns: 1fr; }
+  .proposals-total { justify-self: end; }
+}
+
 .post-form {
   display: flex;
   flex-direction: column;
@@ -169,3 +204,27 @@
 
 /* Scroll enhancements */
 .posts-list { max-height: 800px; overflow-y: auto; }
+
+/* Keep data tables visually inside the admin section */
+.table-wrapper {
+  width: 100%;
+  overflow: auto; /* enable horizontal scroll if needed */
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 0.7rem;
+  box-shadow: var(--box-shadow);
+  margin-bottom: 1rem;
+}
+
+.table-wrapper .admin-table {
+  width: 100%;
+  margin: 0; /* remove extra bottom spacing inside wrapper */
+}
+
+/* Keep header visible when horizontally scrolling */
+.table-wrapper .admin-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--logo-title-bg);
+}
