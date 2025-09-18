@@ -94,8 +94,9 @@ export default function LoginRegisterPage({ onLogin }) {
         )}
       </div>
       {isLogin && (
-        <div style={{marginTop:8,textAlign:'center'}}>
+        <div style={{marginTop:8,textAlign:'center', display:'grid', gap:8}}>
           <button className="switch-link" onClick={()=>{ window.location.hash = '#verify-email'; }}>Enter verification code</button>
+          <button className="switch-link" onClick={()=>{ window.location.hash = '#forgot-password'; }}>Forgot password?</button>
         </div>
       )}
       {isLogin && message.includes('Email not verified') && (

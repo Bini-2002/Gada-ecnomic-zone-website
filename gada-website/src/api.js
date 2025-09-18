@@ -237,6 +237,38 @@ export async function verifyEmail({ token, username, email }) {
   return data; // { detail }
 }
 
+// Request a password reset token to be emailed (or returned in dev)
+export async function requestPasswordReset(email) {
+  const res = await fetch(`${API_BASE}/password/reset-request`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || 'Reset request failed');
+  return data; // { detail, token? }
+}
+
+// Perform password reset with token and new password
+export async function performPasswordReset({ token, new_password }) {
+  const res = await fetch(`${API_BASE}/password/reset-perform`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token, new_password })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || 'Reset failed');
+  return data; // { detail }
+}
+
+// Send verification code for logged-in user (or via username/password flow already provided)
+export async function sendVerificationForCurrentUser() {
+  const res = await authFetch(`${API_BASE}/email/send-verification`, { method: 'POST' });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || 'Failed to send verification');
+  return data; // { detail, dev_code? }
+}
+
 // --- Investor Proposals (Admin) ---
 export async function listInvestorProposals({ skip = 0, limit = 50, search, status, sector } = {}, token) {
   const params = new URLSearchParams();

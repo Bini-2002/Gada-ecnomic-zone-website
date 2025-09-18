@@ -20,6 +20,8 @@ import AdminDashboard from './components/AdminDashboard.jsx';
 import LoginRegisterPage from './components/LoginRegisterPage.jsx';
 import VerifyEmail from './components/VerifyEmail.jsx';
 import InvestmentProposalPortal from './components/InvestmentProposalPortal.jsx';
+import ForgotPassword from './components/ForgotPassword.jsx';
+import ResetPassword from './components/ResetPassword.jsx';
 
 function App() {
   const { isDarkMode } = useContext(ThemeContext);
@@ -125,6 +127,10 @@ function App() {
         return <LoginRegisterPage onLogin={handleLogin} />;
       case '#verify-email':
         return <VerifyEmail />;
+      case '#forgot-password':
+        return <ForgotPassword />;
+      case '#reset-password':
+        return <ResetPassword />;
       default:
         // Handle News detail route like #news/123
         if (currentView.startsWith('#news/')) {
