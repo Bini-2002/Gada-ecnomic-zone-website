@@ -6,12 +6,14 @@ class UserCreate(BaseModel):
     username: str
     email: str
     password: str
+    full_name: str | None = None
     role: str
 
 class User(BaseModel):
     id: int
     username: str
     email: str
+    full_name: str | None = None
     role: str
     approved: bool | None = None
     created_at: datetime | None = None
@@ -108,6 +110,7 @@ class Comment(BaseModel):
     user_id: int
     content: str
     created_at: datetime
+    user: dict | None = None
     model_config = {"from_attributes": True}
 
 class CommentList(BaseModel):

@@ -24,6 +24,7 @@ export default function LoginRegisterPage({ onLogin }) {
   const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+  const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -58,7 +59,7 @@ export default function LoginRegisterPage({ onLogin }) {
       setMessage("Username and email are required.");
       return;
     }
-    const res = await registerUser({ username, email, password, role: "user" });
+  const res = await registerUser({ username, email, password, role: "user", full_name: fullName });
     if (res.id) {
       setMessage("Registration successful! You can now log in.");
       setIsLogin(true);
@@ -74,6 +75,8 @@ export default function LoginRegisterPage({ onLogin }) {
         <label>Username</label>
         <input type="text" value={username} onChange={e=>setUsername(e.target.value)} required />
         {!isLogin && <>
+          <label>Full Name</label>
+          <input type="text" value={fullName} onChange={e=>setFullName(e.target.value)} required />
           <label>Email</label>
           <input type="email" value={email} onChange={e=>setEmail(e.target.value)} required />
         </>}

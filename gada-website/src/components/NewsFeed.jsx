@@ -119,7 +119,7 @@ export default function NewsFeed({ postId, onBack }){
         </form>
         <div className="comment-list">
           {comments.map(c => {
-            const displayName = (c.user && (c.user.username || c.user.name)) || c.username || c.user_name || `User #${c.user_id}`;
+            const displayName = (c.user && (c.user.full_name || c.user.username || c.user.name)) || c.full_name || c.username || c.user_name || `User #${c.user_id}`;
             const initial = (displayName || '?').toString().trim().charAt(0).toUpperCase() || '?';
             return (
               <div key={c.id} className="comment-item">

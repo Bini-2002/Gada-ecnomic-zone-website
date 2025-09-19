@@ -63,6 +63,7 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(database.get_d
         username=user.username,
         email=user.email,
         hashed_password=hashed_password,
+        full_name=user.full_name,
         role=user.role,
         approved=(user.role == 'admin')
     )
@@ -639,7 +640,24 @@ def get_post(post_id: int, db: Session = Depends(database.get_db)):
 def list_comments(post_id: int, db: Session = Depends(database.get_db), skip: int = 0, limit: int = 50):
     q = db.query(models.Comment).filter(models.Comment.post_id == post_id)
     total = q.count()
-    items = q.order_by(models.Comment.id.asc()).offset(skip).limit(min(limit, 200)).all()
+    comments = q.order_by(models.Comment.id.asc()).offset(skip).limit(min(limit, 200)).all()
+    # Attach user details for display
+    user_ids = list({c.user_id for c in comments})
+    users_map = {}
+    if user_ids:
+        users = db.query(models.User).filter(models.User.id.in_(user_ids)).all()
+        users_map = {u.id: {"id": u.id, "username": u.username, "full_name": u.full_name} for u in users}
+    items = []
+    for c in comments:
+        d = {
+            "id": c.id,
+            "post_id": c.post_id,
+            "user_id": c.user_id,
+            "content": c.content,
+            "created_at": c.created_at,
+            "user": users_map.get(c.user_id)
+        }
+        items.append(d)
     return {"total": total, "items": items}
 
 @app.post("/posts/{post_id}/comments", response_model=schemas.Comment)
@@ -661,7 +679,14 @@ def add_comment(post_id: int, payload: schemas.CommentCreate, db: Session = Depe
     post.comments_count = (post.comments_count or 0) + 1
     db.commit()
     db.refresh(comment)
-    return comment
+    return {
+        "id": comment.id,
+        "post_id": comment.post_id,
+        "user_id": comment.user_id,
+        "content": comment.content,
+        "created_at": comment.created_at,
+        "user": {"id": current_user.id, "username": current_user.username, "full_name": current_user.full_name}
+    }
 
 @app.delete("/posts/{post_id}/comments/{comment_id}")
 def delete_comment(post_id: int, comment_id: int, db: Session = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_user)):
